@@ -7,8 +7,22 @@ import (
 	"testing"
 )
 
+type StubGameStore struct {
+	likes map[string]int
+}
+
+func (s *StubGameStore) GetGameLikes(name string) int {
+	return s.likes[name]
+}
+
 func TestGETLikes(t *testing.T) {
-	server := &GameServer{}
+	store := StubGameStore{
+		map[string]int{
+			"x1": 32,
+			"x2": 64,
+		},
+	}
+	server := &GameServer{&store}
 
 	t.Run("returns Mega Man X's likes", func(t *testing.T) {
 		request := newGetLikesRequest("x1")
