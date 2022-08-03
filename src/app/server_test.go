@@ -8,11 +8,13 @@ import (
 )
 
 func TestGETLikes(t *testing.T) {
+	server := &GameServer{}
+
 	t.Run("returns Mega Man X's likes", func(t *testing.T) {
 		request := newGetLikesRequest("x1")
 		response := httptest.NewRecorder()
 
-		Server(response, request)
+		server.ServeHTTP(response, request)
 
 		assertResponseBody(t, response.Body.String(), "32")
 	})
@@ -21,7 +23,7 @@ func TestGETLikes(t *testing.T) {
 		request := newGetLikesRequest("x2")
 		response := httptest.NewRecorder()
 
-		Server(response, request)
+		server.ServeHTTP(response, request)
 
 		assertResponseBody(t, response.Body.String(), "64")
 	})

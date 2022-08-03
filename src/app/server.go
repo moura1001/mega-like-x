@@ -5,10 +5,18 @@ import (
 	"net/http"
 )
 
-func Server(w http.ResponseWriter, r *http.Request) {
+type GameServer struct {
+	store GameStore
+}
+
+func (g *GameServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	game := r.URL.Path[len("/likes/"):]
 
-	fmt.Fprint(w, GetGameLikes(game))
+	fmt.Fprint(w, g.store.GetGameLikes(game))
+}
+
+type GameStore interface {
+	GetGameLikes(name string) int
 }
 
 func GetGameLikes(name string) string {
