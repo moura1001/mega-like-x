@@ -2,31 +2,27 @@ package app
 
 import (
 	"fmt"
+	"moura1001/mega_like_x/src/app/store"
 	"net/http"
 )
 
 type GameServer struct {
-	store GameStore
+	store store.GameStore
+}
+
+func NewGameServer(storeType string) *GameServer {
+	server := &GameServer{}
+
+	switch storeType {
+	case "in_memory":
+		server.store = &store.InMemoryGameStore{}
+	}
+
+	return server
 }
 
 func (g *GameServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	game := r.URL.Path[len("/likes/"):]
 
 	fmt.Fprint(w, g.store.GetGameLikes(game))
-}
-
-type GameStore interface {
-	GetGameLikes(name string) int
-}
-
-func GetGameLikes(name string) string {
-	if name == "x1" {
-		return "32"
-	}
-
-	if name == "x2" {
-		return "64"
-	}
-
-	return ""
 }

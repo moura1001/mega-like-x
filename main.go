@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	server := &app.GameServer{}
+	server := app.NewGameServer("in_memory")
 
 	if err := http.ListenAndServe(":4000", server); err != nil {
 		log.Fatalf("could not listen on port 4000: %v", err)
