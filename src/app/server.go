@@ -8,14 +8,17 @@ import (
 func Server(w http.ResponseWriter, r *http.Request) {
 	game := r.URL.Path[len("/likes/"):]
 
-	if game == "x1" {
-		fmt.Fprint(w, "32")
-		return
+	fmt.Fprint(w, GetGameLikes(game))
+}
+
+func GetGameLikes(name string) string {
+	if name == "x1" {
+		return "32"
 	}
 
-	if game == "x2" {
-		fmt.Fprint(w, "64")
-		return
+	if name == "x2" {
+		return "64"
 	}
 
+	return ""
 }
