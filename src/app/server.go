@@ -24,5 +24,11 @@ func NewGameServer(storeType string) *GameServer {
 func (g *GameServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	game := r.URL.Path[len("/likes/"):]
 
-	fmt.Fprint(w, g.store.GetGameLikes(game))
+	likes := g.store.GetGameLikes(game)
+
+	if likes == 0 {
+		w.WriteHeader(http.StatusNotFound)
+	}
+
+	fmt.Fprint(w, likes)
 }

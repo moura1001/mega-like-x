@@ -30,6 +30,7 @@ func TestGETLikes(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
+		assertStatus(t, response.Code, http.StatusOK)
 		assertResponseBody(t, response.Body.String(), "32")
 	})
 
@@ -39,7 +40,17 @@ func TestGETLikes(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
+		assertStatus(t, response.Code, http.StatusOK)
 		assertResponseBody(t, response.Body.String(), "64")
+	})
+
+	t.Run("returns 404 on missing game", func(t *testing.T) {
+		request := newGetLikesRequest("corrupted")
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusNotFound)
 	})
 }
 
@@ -52,5 +63,12 @@ func assertResponseBody(t *testing.T, got, want string) {
 	t.Helper()
 	if got != want {
 		t.Errorf("response body error, got '%s', want '%s'", got, want)
+	}
+}
+
+func assertStatus(t *testing.T, got, want int) {
+	t.Helper()
+	if got != want {
+		t.Errorf("did not get correct status, got '%d', want '%d'", got, want)
 	}
 }
