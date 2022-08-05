@@ -9,13 +9,15 @@ import (
 )
 
 const (
+	host     = "localhost"
 	user     = "usertest"
 	password = "test"
 	dbname   = "dbtest"
 )
 
 func TestConnectionPing(t *testing.T) {
-	connectionString := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", user, password, dbname)
+	connectionString := fmt.Sprintf("host=%s user=%s password=%s "+
+		"dbname=%s sslmode=disable", host, user, password, dbname)
 
 	pgConn, err := sql.Open("postgres", connectionString)
 	if err != nil {
