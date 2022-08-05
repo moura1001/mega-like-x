@@ -54,6 +54,22 @@ func TestGETLikes(t *testing.T) {
 	})
 }
 
+func TestStoreLikes(t *testing.T) {
+	store := StubGameStore{
+		map[string]int{},
+	}
+	server := &GameServer{&store}
+
+	t.Run("it returns accepted on POST", func(t *testing.T) {
+		request := httptest.NewRequest(http.MethodPost, "/likes/x6", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusAccepted)
+	})
+}
+
 func newGetLikesRequest(game string) *http.Request {
 	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/likes/%s", game), nil)
 	return req

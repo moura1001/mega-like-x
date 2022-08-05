@@ -22,6 +22,12 @@ func NewGameServer(storeType string) *GameServer {
 }
 
 func (g *GameServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method == http.MethodPost {
+		w.WriteHeader(http.StatusAccepted)
+		return
+	}
+
 	game := r.URL.Path[len("/likes/"):]
 
 	likes := g.store.GetGameLikes(game)
