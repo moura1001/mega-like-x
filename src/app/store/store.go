@@ -5,6 +5,12 @@ type GameStore interface {
 	RecordLike(name string)
 }
 
+type StoreType string
+
+const (
+	IN_MEMORY StoreType = "in_memory"
+)
+
 func GetGameLikes(name string) string {
 	if name == "x1" {
 		return "32"

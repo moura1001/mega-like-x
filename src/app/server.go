@@ -10,11 +10,11 @@ type GameServer struct {
 	store store.GameStore
 }
 
-func NewGameServer(storeType string) *GameServer {
+func NewGameServer(storeType store.StoreType) *GameServer {
 	server := &GameServer{}
 
 	switch storeType {
-	case "in_memory":
+	case store.IN_MEMORY:
 		server.store = &store.InMemoryGameStore{}
 	}
 
