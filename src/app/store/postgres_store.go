@@ -1,13 +1,19 @@
 package store
 
-type PostgresGameStore struct{}
+import "database/sql"
+
+type PostgresGameStore struct {
+	DB *sql.DB
+}
 
 func NewPostgresGameStore() *PostgresGameStore {
 	return &PostgresGameStore{}
 }
 
 func (p *PostgresGameStore) GetGameLikes(name string) int {
-	return 7
+	var likes int
+	p.DB.QueryRow("SELECT likes FROM games WHERE name=$1", name).Scan(&likes)
+	return likes
 }
 
 func (p *PostgresGameStore) RecordLike(name string) {}
