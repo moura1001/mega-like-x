@@ -15,7 +15,7 @@ func NewGameServer(storeType store.StoreType) *GameServer {
 
 	switch storeType {
 	case store.IN_MEMORY:
-		server.store = &store.InMemoryGameStore{}
+		server.store = store.NewInMemoryGameStore()
 	}
 
 	return server
