@@ -65,6 +65,27 @@ func TestGETLikes(t *testing.T) {
 	})
 }
 
+func TestStoreLikes(t *testing.T) {
+	setup(t)
+
+	store.DB.Exec(`
+		INSERT INTO	games(name)
+		VALUES	('x4')
+	`)
+
+	t.Run("record user like", func(t *testing.T) {
+		game := "x4"
+
+		likes := store.GetGameLikes(game)
+		assertLikesValue(t, likes, 0)
+
+		store.RecordLike(game)
+
+		likes = store.GetGameLikes(game)
+		assertLikesValue(t, likes, 1)
+	})
+}
+
 func getPostgresConnection(t *testing.T) *sql.DB {
 	connectionString := fmt.Sprintf("host=%s user=%s password=%s "+
 		"dbname=%s sslmode=disable", host, user, password, dbname)

@@ -16,4 +16,6 @@ func (p *PostgresGameStore) GetGameLikes(name string) int {
 	return likes
 }
 
-func (p *PostgresGameStore) RecordLike(name string) {}
+func (p *PostgresGameStore) RecordLike(name string) {
+	p.DB.Exec("UPDATE games SET likes=(likes+1) WHERE name=$1", name)
+}
