@@ -2,6 +2,7 @@ package store
 
 type GameStore interface {
 	GetGameLikes(name string) int
+	RecordLike(name string)
 }
 
 func GetGameLikes(name string) string {

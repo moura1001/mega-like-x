@@ -23,17 +23,17 @@ func NewGameServer(storeType string) *GameServer {
 
 func (g *GameServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
+	game := r.URL.Path[len("/likes/"):]
+
 	switch r.Method {
 	case http.MethodGet:
-		g.showLikes(w, r)
+		g.showLikes(w, game)
 	case http.MethodPost:
-		g.processLike(w)
+		g.processLike(w, game)
 	}
 }
 
-func (g *GameServer) showLikes(w http.ResponseWriter, r *http.Request) {
-	game := r.URL.Path[len("/likes/"):]
-
+func (g *GameServer) showLikes(w http.ResponseWriter, game string) {
 	likes := g.store.GetGameLikes(game)
 
 	if likes == 0 {
@@ -43,6 +43,7 @@ func (g *GameServer) showLikes(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, likes)
 }
 
-func (g *GameServer) processLike(w http.ResponseWriter) {
+func (g *GameServer) processLike(w http.ResponseWriter, game string) {
+	g.store.RecordLike(game)
 	w.WriteHeader(http.StatusAccepted)
 }

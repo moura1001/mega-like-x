@@ -8,11 +8,16 @@ import (
 )
 
 type StubGameStore struct {
-	likes map[string]int
+	likes     map[string]int
+	likeCalls []string
 }
 
 func (s *StubGameStore) GetGameLikes(name string) int {
 	return s.likes[name]
+}
+
+func (s *StubGameStore) RecordLike(name string) {
+	s.likeCalls = append(s.likeCalls, name)
 }
 
 func TestGETLikes(t *testing.T) {
@@ -21,6 +26,7 @@ func TestGETLikes(t *testing.T) {
 			"x1": 32,
 			"x2": 64,
 		},
+		nil,
 	}
 	server := &GameServer{&store}
 
@@ -57,16 +63,27 @@ func TestGETLikes(t *testing.T) {
 func TestStoreLikes(t *testing.T) {
 	store := StubGameStore{
 		map[string]int{},
+		nil,
 	}
 	server := &GameServer{&store}
 
-	t.Run("it returns accepted on POST", func(t *testing.T) {
-		request := httptest.NewRequest(http.MethodPost, "/likes/x6", nil)
+	t.Run("it records likes when POST", func(t *testing.T) {
+		game := "x6"
+
+		request := newPostLikeRequest(game)
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
 
 		assertStatus(t, response.Code, http.StatusAccepted)
+
+		if len(store.likeCalls) != 1 {
+			t.Errorf("got %d calls to RecordLike, want %d", len(store.likeCalls), 1)
+		}
+
+		if store.likeCalls[0] != game {
+			t.Errorf("did not store correct liked game, got '%s' want '%s'", store.likeCalls[0], game)
+		}
 	})
 }
 
@@ -87,4 +104,9 @@ func assertStatus(t *testing.T, got, want int) {
 	if got != want {
 		t.Errorf("did not get correct status, got '%d', want '%d'", got, want)
 	}
+}
+
+func newPostLikeRequest(game string) *http.Request {
+	req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/likes/%s", game), nil)
+	return req
 }
