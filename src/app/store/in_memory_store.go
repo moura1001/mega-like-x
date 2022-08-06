@@ -1,5 +1,7 @@
 package store
 
+import "moura1001/mega_like_x/src/app/model"
+
 type InMemoryGameStore struct {
 	store map[string]int
 }
@@ -14,4 +16,8 @@ func (i *InMemoryGameStore) GetGameLikes(name string) int {
 
 func (i *InMemoryGameStore) RecordLike(name string) {
 	i.store[name]++
+}
+
+func (i *InMemoryGameStore) GetPolling() []model.Game {
+	return nil
 }

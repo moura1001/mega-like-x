@@ -1,15 +1,20 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"moura1001/mega_like_x/src/app/model"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 )
 
 type StubGameStore struct {
 	likes     map[string]int
 	likeCalls []string
+	polling   []model.Game
 }
 
 func (s *StubGameStore) GetGameLikes(name string) int {
@@ -20,12 +25,17 @@ func (s *StubGameStore) RecordLike(name string) {
 	s.likeCalls = append(s.likeCalls, name)
 }
 
+func (s *StubGameStore) GetPolling() []model.Game {
+	return s.polling
+}
+
 func TestGETLikes(t *testing.T) {
 	store := StubGameStore{
 		map[string]int{
 			"x1": 32,
 			"x2": 64,
 		},
+		nil,
 		nil,
 	}
 	server := NewGameServer("")
@@ -65,6 +75,7 @@ func TestStoreLikes(t *testing.T) {
 	store := StubGameStore{
 		map[string]int{},
 		nil,
+		nil,
 	}
 	server := NewGameServer("")
 	server.store = &store
@@ -89,22 +100,30 @@ func TestStoreLikes(t *testing.T) {
 	})
 }
 
-func TestGamesToLike(t *testing.T) {
-	store := StubGameStore{
-		map[string]int{},
-		nil,
+func TestPolling(t *testing.T) {
+	wantedGames := []model.Game{
+		{Name: "x1", Likes: 30},
+		{Name: "x4", Likes: 12},
+		{Name: "x6", Likes: 23},
 	}
+
+	store := StubGameStore{nil, nil, wantedGames}
 	server := NewGameServer("")
 	server.store = &store
 
-	t.Run("it returns 200 on /games", func(t *testing.T) {
+	t.Run("it returns the game table as JSON", func(t *testing.T) {
 
-		request := httptest.NewRequest(http.MethodGet, "/games", nil)
+		request := newGetPollingRequest()
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
 
+		assertContentType(t, response, jsonContentType)
+
+		got := getPollingFromResponse(t, response.Body)
+
 		assertStatus(t, response.Code, http.StatusOK)
+		assertPolling(t, got, wantedGames)
 	})
 }
 
@@ -130,4 +149,36 @@ func assertStatus(t *testing.T, got, want int) {
 func newPostLikeRequest(game string) *http.Request {
 	req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/likes/%s", game), nil)
 	return req
+}
+
+func newGetPollingRequest() *http.Request {
+	req := httptest.NewRequest(http.MethodGet, "/games", nil)
+	return req
+}
+
+func getPollingFromResponse(t *testing.T, body io.Reader) (polling []model.Game) {
+	t.Helper()
+
+	err := json.NewDecoder(body).Decode(&polling)
+	if err != nil {
+		t.Fatalf("unable to parse response from server '%v' into slice of Vote: '%v'", body, err)
+	}
+
+	return
+}
+
+func assertPolling(t *testing.T, got, want []model.Game) {
+	t.Helper()
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}
+
+const jsonContentType = "application/json"
+
+func assertContentType(t *testing.T, response *httptest.ResponseRecorder, want string) {
+	t.Helper()
+	if response.Result().Header.Get("content-type") != want {
+		t.Errorf("response did not have content-type of %s, got %v", want, response.Result().Body)
+	}
 }

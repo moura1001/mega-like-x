@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"moura1001/mega_like_x/src/app/store"
 	"net/http"
@@ -31,6 +32,8 @@ func NewGameServer(storeType store.StoreType) *GameServer {
 }
 
 func (g *GameServer) gamesHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	json.NewEncoder(w).Encode(g.store.GetPolling())
 	w.WriteHeader(http.StatusOK)
 }
 

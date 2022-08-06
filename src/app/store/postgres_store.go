@@ -1,6 +1,9 @@
 package store
 
-import "database/sql"
+import (
+	"database/sql"
+	"moura1001/mega_like_x/src/app/model"
+)
 
 type PostgresGameStore struct {
 	DB *sql.DB
@@ -18,4 +21,8 @@ func (p *PostgresGameStore) GetGameLikes(name string) int {
 
 func (p *PostgresGameStore) RecordLike(name string) {
 	p.DB.Exec("UPDATE games SET likes=(likes+1) WHERE name=$1", name)
+}
+
+func (i *PostgresGameStore) GetPolling() []model.Game {
+	return nil
 }

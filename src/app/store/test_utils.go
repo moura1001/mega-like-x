@@ -16,6 +16,8 @@ const (
 )
 
 func SetupPostgresStoreTests(t *testing.T) *PostgresGameStore {
+	t.Helper()
+
 	store := NewPostgresGameStore()
 	store.DB = getPostgresConnection(t)
 
@@ -33,6 +35,8 @@ func SetupPostgresStoreTests(t *testing.T) *PostgresGameStore {
 }
 
 func getPostgresConnection(t *testing.T) *sql.DB {
+	t.Helper()
+
 	connectionString := fmt.Sprintf("host=%s user=%s password=%s "+
 		"dbname=%s sslmode=disable", host, user, password, dbname)
 
