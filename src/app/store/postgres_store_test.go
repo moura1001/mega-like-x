@@ -15,10 +15,8 @@ const (
 	dbname   = "dbtest"
 )
 
-var store *PostgresGameStore
-
-func setup(t *testing.T) {
-	store = NewPostgresGameStore()
+func SetupPostgresStoreTests(t *testing.T) *PostgresGameStore {
+	store := NewPostgresGameStore()
 	store.DB = getPostgresConnection(t)
 
 	store.DB.Exec(`
@@ -30,10 +28,12 @@ func setup(t *testing.T) {
 	`)
 
 	store.DB.Exec("TRUNCATE games")
+
+	return store
 }
 
 func TestConnectionPing(t *testing.T) {
-	setup(t)
+	store := SetupPostgresStoreTests(t)
 
 	err := store.DB.Ping()
 	if err != nil {
@@ -42,7 +42,7 @@ func TestConnectionPing(t *testing.T) {
 }
 
 func TestGETLikes(t *testing.T) {
-	setup(t)
+	store := SetupPostgresStoreTests(t)
 
 	store.DB.Exec(`
 		INSERT INTO
@@ -66,7 +66,7 @@ func TestGETLikes(t *testing.T) {
 }
 
 func TestStoreLikes(t *testing.T) {
-	setup(t)
+	store := SetupPostgresStoreTests(t)
 
 	store.DB.Exec(`
 		INSERT INTO	games(name)
