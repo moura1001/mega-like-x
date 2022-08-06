@@ -25,6 +25,21 @@ func NewGameServer(storeType store.StoreType) *GameServer {
 
 func (g *GameServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
+	router := http.NewServeMux()
+
+	router.Handle("/games", http.HandlerFunc(g.gamesHandler))
+
+	router.Handle("/likes/", http.HandlerFunc(g.likesHandler))
+
+	router.ServeHTTP(w, r)
+
+}
+
+func (g *GameServer) gamesHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
+func (g *GameServer) likesHandler(w http.ResponseWriter, r *http.Request) {
 	game := r.URL.Path[len("/likes/"):]
 
 	switch r.Method {
