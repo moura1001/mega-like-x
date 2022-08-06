@@ -16,6 +16,8 @@ func NewGameServer(storeType store.StoreType) *GameServer {
 	switch storeType {
 	case store.IN_MEMORY:
 		server.store = store.NewInMemoryGameStore()
+	case store.POSTGRES:
+		server.store = store.NewPostgresGameStore()
 	}
 
 	return server

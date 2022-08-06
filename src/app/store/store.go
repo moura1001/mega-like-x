@@ -9,6 +9,7 @@ type StoreType string
 
 const (
 	IN_MEMORY StoreType = "in_memory"
+	POSTGRES  StoreType = "postgres"
 )
 
 func GetGameLikes(name string) string {
