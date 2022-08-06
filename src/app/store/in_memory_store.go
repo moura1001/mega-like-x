@@ -19,5 +19,9 @@ func (i *InMemoryGameStore) RecordLike(name string) {
 }
 
 func (i *InMemoryGameStore) GetPolling() []model.Game {
-	return nil
+	var polling []model.Game
+	for name, likes := range i.store {
+		polling = append(polling, model.Game{Name: name, Likes: likes})
+	}
+	return polling
 }

@@ -1,13 +1,14 @@
 package app
 
 import (
+	"moura1001/mega_like_x/src/app/model"
 	"moura1001/mega_like_x/src/app/store"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-func TestRecordingLikesAndRetrievingThem(t *testing.T) {
+func TestRecordingLikesAndRetrievingThemMemory(t *testing.T) {
 	server := NewGameServer(store.IN_MEMORY)
 	game := "x4"
 
@@ -16,11 +17,25 @@ func TestRecordingLikesAndRetrievingThem(t *testing.T) {
 	server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(game))
 	server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(game))
 
-	response := httptest.NewRecorder()
-	server.ServeHTTP(response, newGetLikesRequest(game))
+	t.Run("get likes", func(t *testing.T) {
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, newGetLikesRequest(game))
 
-	assertStatus(t, response.Code, http.StatusOK)
-	assertResponseBody(t, response.Body.String(), "4")
+		assertStatus(t, response.Code, http.StatusOK)
+		assertResponseBody(t, response.Body.String(), "4")
+	})
+
+	t.Run("get polling", func(t *testing.T) {
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, newGetPollingRequest())
+
+		assertStatus(t, response.Code, http.StatusOK)
+		got := getPollingFromResponse(t, response.Body)
+		want := []model.Game{
+			{Name: "x4", Likes: 4},
+		}
+		assertPolling(t, got, want)
+	})
 }
 
 func TestRecordingLikesAndRetrievingThemFromPostgres(t *testing.T) {
