@@ -8,10 +8,11 @@ import (
 
 type GameServer struct {
 	store store.GameStore
+	http.Handler
 }
 
 func NewGameServer(storeType store.StoreType) *GameServer {
-	server := &GameServer{}
+	server := new(GameServer)
 
 	switch storeType {
 	case store.IN_MEMORY:
@@ -20,19 +21,13 @@ func NewGameServer(storeType store.StoreType) *GameServer {
 		server.store = store.NewPostgresGameStore()
 	}
 
-	return server
-}
-
-func (g *GameServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 	router := http.NewServeMux()
+	router.Handle("/games", http.HandlerFunc(server.gamesHandler))
+	router.Handle("/likes/", http.HandlerFunc(server.likesHandler))
 
-	router.Handle("/games", http.HandlerFunc(g.gamesHandler))
+	server.Handler = router
 
-	router.Handle("/likes/", http.HandlerFunc(g.likesHandler))
-
-	router.ServeHTTP(w, r)
-
+	return server
 }
 
 func (g *GameServer) gamesHandler(w http.ResponseWriter, r *http.Request) {

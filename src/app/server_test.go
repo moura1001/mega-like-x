@@ -28,7 +28,8 @@ func TestGETLikes(t *testing.T) {
 		},
 		nil,
 	}
-	server := &GameServer{&store}
+	server := NewGameServer("")
+	server.store = &store
 
 	t.Run("returns Mega Man X's likes", func(t *testing.T) {
 		request := newGetLikesRequest("x1")
@@ -65,7 +66,8 @@ func TestStoreLikes(t *testing.T) {
 		map[string]int{},
 		nil,
 	}
-	server := &GameServer{&store}
+	server := NewGameServer("")
+	server.store = &store
 
 	t.Run("it records likes when POST", func(t *testing.T) {
 		game := "x6"
@@ -92,7 +94,8 @@ func TestGamesToLike(t *testing.T) {
 		map[string]int{},
 		nil,
 	}
-	server := &GameServer{&store}
+	server := NewGameServer("")
+	server.store = &store
 
 	t.Run("it returns 200 on /games", func(t *testing.T) {
 
