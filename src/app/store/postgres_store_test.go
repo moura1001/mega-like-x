@@ -1,36 +1,6 @@
 package store
 
-import (
-	"database/sql"
-	"fmt"
-	"testing"
-
-	_ "github.com/lib/pq"
-)
-
-const (
-	host     = "localhost"
-	user     = "usertest"
-	password = "test"
-	dbname   = "dbtest"
-)
-
-func SetupPostgresStoreTests(t *testing.T) *PostgresGameStore {
-	store := NewPostgresGameStore()
-	store.DB = getPostgresConnection(t)
-
-	store.DB.Exec(`
-		CREATE TABLE IF NOT EXISTS games(
-			name TEXT NOT NULL,
-			likes BIGINT NOT NULL DEFAULT 0,
-			CONSTRAINT games_pkey PRIMARY KEY (name)
-		)
-	`)
-
-	store.DB.Exec("TRUNCATE games")
-
-	return store
-}
+import "testing"
 
 func TestConnectionPing(t *testing.T) {
 	store := SetupPostgresStoreTests(t)
@@ -84,18 +54,6 @@ func TestStoreLikes(t *testing.T) {
 		likes = store.GetGameLikes(game)
 		assertLikesValue(t, likes, 1)
 	})
-}
-
-func getPostgresConnection(t *testing.T) *sql.DB {
-	connectionString := fmt.Sprintf("host=%s user=%s password=%s "+
-		"dbname=%s sslmode=disable", host, user, password, dbname)
-
-	pgConn, err := sql.Open("postgres", connectionString)
-	if err != nil {
-		t.Fatalf("get connection error: '%v'", err)
-	}
-
-	return pgConn
 }
 
 func assertLikesValue(t *testing.T, got, want int) {
