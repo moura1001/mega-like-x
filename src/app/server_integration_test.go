@@ -91,3 +91,58 @@ func TestRecordingLikesAndRetrievingThemFromPostgres(t *testing.T) {
 		store.AssertPolling(t, got, want)
 	})
 }
+
+func TestRecordingLikesAndRetrievingThemFromFile(t *testing.T) {
+	database, cleanDatabase := store.CreateTempFile(t, `[
+		{"Name": "x1", "Likes": 4}
+	]`)
+	defer cleanDatabase()
+
+	st := store.NewFileSystemGameStore(database)
+	server := NewGameServer(store.FILE_SYSTEM)
+	server.store = st
+
+	game := "x1"
+	newGame := "x2"
+
+	server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(game))
+	server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(game))
+
+	t.Run("get likes", func(t *testing.T) {
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, newGetLikesRequest(game))
+
+		assertStatus(t, response.Code, http.StatusOK)
+		assertResponseBody(t, response.Body.String(), "6")
+	})
+
+	t.Run("get polling", func(t *testing.T) {
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, newGetPollingRequest())
+
+		assertStatus(t, response.Code, http.StatusOK)
+		got := getPollingFromResponse(t, response.Body)
+		want := model.Polling{
+			{Name: "x1", Likes: 6},
+		}
+		store.AssertPolling(t, got, want)
+	})
+
+	t.Run("record user like to new games", func(t *testing.T) {
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(newGame))
+		server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(newGame))
+		server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(newGame))
+
+		server.ServeHTTP(response, newGetPollingRequest())
+
+		assertStatus(t, response.Code, http.StatusOK)
+		got := getPollingFromResponse(t, response.Body)
+		want := model.Polling{
+			{Name: "x1", Likes: 6},
+			{Name: "x2", Likes: 3},
+		}
+		store.AssertPolling(t, got, want)
+	})
+}

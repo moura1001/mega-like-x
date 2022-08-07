@@ -22,6 +22,8 @@ func NewGameServer(storeType store.StoreType) *GameServer {
 		server.store = store.NewInMemoryGameStore()
 	case store.POSTGRES:
 		server.store = store.NewPostgresGameStore()
+	case store.FILE_SYSTEM:
+		server.store = store.NewFileSystemGameStore(nil)
 	}
 
 	router := mux.NewRouter()

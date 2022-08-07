@@ -11,6 +11,7 @@ type GameStore interface {
 type StoreType string
 
 const (
-	IN_MEMORY StoreType = "in_memory"
-	POSTGRES  StoreType = "postgres"
+	IN_MEMORY   StoreType = "in_memory"
+	POSTGRES    StoreType = "postgres"
+	FILE_SYSTEM StoreType = "file_system"
 )

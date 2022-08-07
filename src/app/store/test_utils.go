@@ -3,7 +3,10 @@ package store
 import (
 	"database/sql"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"moura1001/mega_like_x/src/app/model"
+	"os"
 	"reflect"
 	"testing"
 
@@ -62,4 +65,22 @@ func AssertLikesValue(t *testing.T, got, want int) {
 	if got != want {
 		t.Errorf("did not get correct likes, got %d, want %d", got, want)
 	}
+}
+
+func CreateTempFile(t *testing.T, initialData string) (io.ReadWriteSeeker, func()) {
+	t.Helper()
+
+	tmpFile, err := ioutil.TempFile("", "db")
+	if err != nil {
+		t.Fatalf("could not create temp file: %v", err)
+	}
+
+	tmpFile.Write([]byte(initialData))
+
+	removeFile := func() {
+		tmpFile.Close()
+		os.Remove(tmpFile.Name())
+	}
+
+	return tmpFile, removeFile
 }
