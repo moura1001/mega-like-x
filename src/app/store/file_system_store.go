@@ -18,3 +18,16 @@ func (f *FileSystemGameStore) GetPolling() []model.Game {
 	polling, _ := model.NewGamePolling(f.database)
 	return polling
 }
+
+func (f *FileSystemGameStore) GetGameLikes(name string) int {
+	var likes int
+
+	for _, game := range f.GetPolling() {
+		if game.Name == name {
+			likes = game.Likes
+			break
+		}
+	}
+
+	return likes
+}

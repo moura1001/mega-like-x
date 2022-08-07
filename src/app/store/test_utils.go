@@ -56,3 +56,10 @@ func AssertPolling(t *testing.T, got, want []model.Game) {
 		t.Errorf("got %v, want %v", got, want)
 	}
 }
+
+func AssertLikesValue(t *testing.T, got, want int) {
+	t.Helper()
+	if got != want {
+		t.Errorf("did not get correct likes, got %d, want %d", got, want)
+	}
+}

@@ -27,4 +27,18 @@ func TestFileSystemStore(t *testing.T) {
 		got = store.GetPolling()
 		AssertPolling(t, got, want)
 	})
+
+	t.Run("get game likes", func(t *testing.T) {
+		database := strings.NewReader(`[
+			{"Name": "x7", "Likes": 3},
+			{"Name": "x8", "Likes": 0}
+		]`)
+
+		store := NewFileSystemGameStore(database)
+
+		got := store.GetGameLikes("x7")
+		want := 3
+
+		AssertLikesValue(t, got, want)
+	})
 }
