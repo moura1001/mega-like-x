@@ -9,7 +9,7 @@ import (
 )
 
 func TestRecordingLikesAndRetrievingThemMemory(t *testing.T) {
-	server := NewGameServer(store.IN_MEMORY)
+	server := NewGameServer(store.IN_MEMORY, nil)
 	game := "x4"
 	newGame := "x6"
 
@@ -57,7 +57,7 @@ func TestRecordingLikesAndRetrievingThemMemory(t *testing.T) {
 }
 
 func TestRecordingLikesAndRetrievingThemFromPostgres(t *testing.T) {
-	server := NewGameServer(store.POSTGRES)
+	server := NewGameServer(store.POSTGRES, nil)
 	server.store = store.SetupPostgresStoreTests(t)
 
 	game := "x8"
@@ -98,9 +98,7 @@ func TestRecordingLikesAndRetrievingThemFromFile(t *testing.T) {
 	]`)
 	defer cleanDatabase()
 
-	st := store.NewFileSystemGameStore(database)
-	server := NewGameServer(store.FILE_SYSTEM)
-	server.store = st
+	server := NewGameServer(store.FILE_SYSTEM, database)
 
 	game := "x1"
 	newGame := "x2"

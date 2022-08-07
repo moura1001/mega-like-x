@@ -8,20 +8,24 @@ import (
 
 type FileSystemGameStore struct {
 	database io.ReadWriteSeeker
+	polling  model.Polling
 }
 
 func NewFileSystemGameStore(database io.ReadWriteSeeker) *FileSystemGameStore {
-	return &FileSystemGameStore{database}
+	database.Seek(0, 0)
+	polling, _ := model.NewGamePolling(database)
+	return &FileSystemGameStore{
+		database: database,
+		polling:  polling,
+	}
 }
 
 func (f *FileSystemGameStore) GetPolling() model.Polling {
-	f.database.Seek(0, 0)
-	polling, _ := model.NewGamePolling(f.database)
-	return polling
+	return f.polling
 }
 
 func (f *FileSystemGameStore) GetGameLikes(name string) int {
-	game := f.GetPolling().Find(name)
+	game := f.polling.Find(name)
 
 	if game != nil {
 		return game.Likes
@@ -31,16 +35,15 @@ func (f *FileSystemGameStore) GetGameLikes(name string) int {
 }
 
 func (f *FileSystemGameStore) RecordLike(name string) {
-	polling := f.GetPolling()
-	game := polling.Find(name)
+	game := f.polling.Find(name)
 
 	if game != nil {
 		game.Likes++
 	} else {
-		polling = append(polling, model.Game{Name: name, Likes: 1})
+		f.polling = append(f.polling, model.Game{Name: name, Likes: 1})
 	}
 
 	f.database.Seek(0, 0)
 
-	json.NewEncoder(f.database).Encode(polling)
+	json.NewEncoder(f.database).Encode(f.polling)
 }

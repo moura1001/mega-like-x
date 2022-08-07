@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"moura1001/mega_like_x/src/app/store"
 	"net/http"
 
@@ -14,7 +15,7 @@ type GameServer struct {
 	http.Handler
 }
 
-func NewGameServer(storeType store.StoreType) *GameServer {
+func NewGameServer(storeType store.StoreType, fileDB io.ReadWriteSeeker) *GameServer {
 	server := new(GameServer)
 
 	switch storeType {
@@ -23,7 +24,7 @@ func NewGameServer(storeType store.StoreType) *GameServer {
 	case store.POSTGRES:
 		server.store = store.NewPostgresGameStore()
 	case store.FILE_SYSTEM:
-		server.store = store.NewFileSystemGameStore(nil)
+		server.store = store.NewFileSystemGameStore(fileDB)
 	}
 
 	router := mux.NewRouter()
