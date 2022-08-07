@@ -34,7 +34,7 @@ func TestRecordingLikesAndRetrievingThemMemory(t *testing.T) {
 		want := []model.Game{
 			{Name: "x4", Likes: 4},
 		}
-		assertPolling(t, got, want)
+		store.AssertPolling(t, got, want)
 	})
 }
 
@@ -44,8 +44,8 @@ func TestRecordingLikesAndRetrievingThemFromPostgres(t *testing.T) {
 
 	game := "x8"
 	// cast to Postgres store
-	store := server.store.(*store.PostgresGameStore)
-	store.DB.Exec(`
+	st := server.store.(*store.PostgresGameStore)
+	st.DB.Exec(`
 		INSERT INTO	games(name)
 		VALUES	($1)
 	`, game)
@@ -70,6 +70,6 @@ func TestRecordingLikesAndRetrievingThemFromPostgres(t *testing.T) {
 		want := []model.Game{
 			{Name: "x8", Likes: 2},
 		}
-		assertPolling(t, got, want)
+		store.AssertPolling(t, got, want)
 	})
 }

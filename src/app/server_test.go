@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io"
 	"moura1001/mega_like_x/src/app/model"
+	"moura1001/mega_like_x/src/app/store"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 )
 
@@ -30,7 +30,7 @@ func (s *StubGameStore) GetPolling() []model.Game {
 }
 
 func TestGETLikes(t *testing.T) {
-	store := StubGameStore{
+	st := StubGameStore{
 		map[string]int{
 			"x1": 32,
 			"x2": 64,
@@ -39,7 +39,7 @@ func TestGETLikes(t *testing.T) {
 		nil,
 	}
 	server := NewGameServer("")
-	server.store = &store
+	server.store = &st
 
 	t.Run("returns Mega Man X's likes", func(t *testing.T) {
 		request := newGetLikesRequest("x1")
@@ -72,13 +72,13 @@ func TestGETLikes(t *testing.T) {
 }
 
 func TestStoreLikes(t *testing.T) {
-	store := StubGameStore{
+	st := StubGameStore{
 		map[string]int{},
 		nil,
 		nil,
 	}
 	server := NewGameServer("")
-	server.store = &store
+	server.store = &st
 
 	t.Run("it records likes when POST", func(t *testing.T) {
 		game := "x6"
@@ -90,12 +90,12 @@ func TestStoreLikes(t *testing.T) {
 
 		assertStatus(t, response.Code, http.StatusAccepted)
 
-		if len(store.likeCalls) != 1 {
-			t.Errorf("got %d calls to RecordLike, want %d", len(store.likeCalls), 1)
+		if len(st.likeCalls) != 1 {
+			t.Errorf("got %d calls to RecordLike, want %d", len(st.likeCalls), 1)
 		}
 
-		if store.likeCalls[0] != game {
-			t.Errorf("did not store correct liked game, got '%s' want '%s'", store.likeCalls[0], game)
+		if st.likeCalls[0] != game {
+			t.Errorf("did not store correct liked game, got '%s' want '%s'", st.likeCalls[0], game)
 		}
 	})
 }
@@ -107,9 +107,9 @@ func TestPolling(t *testing.T) {
 		{Name: "x6", Likes: 23},
 	}
 
-	store := StubGameStore{nil, nil, wantedGames}
+	st := StubGameStore{nil, nil, wantedGames}
 	server := NewGameServer("")
-	server.store = &store
+	server.store = &st
 
 	t.Run("it returns the game table as JSON", func(t *testing.T) {
 
@@ -123,7 +123,7 @@ func TestPolling(t *testing.T) {
 		got := getPollingFromResponse(t, response.Body)
 
 		assertStatus(t, response.Code, http.StatusOK)
-		assertPolling(t, got, wantedGames)
+		store.AssertPolling(t, got, wantedGames)
 	})
 }
 
@@ -165,13 +165,6 @@ func getPollingFromResponse(t *testing.T, body io.Reader) (polling []model.Game)
 	}
 
 	return
-}
-
-func assertPolling(t *testing.T, got, want []model.Game) {
-	t.Helper()
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got %v, want %v", got, want)
-	}
 }
 
 const jsonContentType = "application/json"

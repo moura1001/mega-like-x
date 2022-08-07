@@ -3,6 +3,8 @@ package store
 import (
 	"database/sql"
 	"fmt"
+	"moura1001/mega_like_x/src/app/model"
+	"reflect"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -46,4 +48,11 @@ func getPostgresConnection(t *testing.T) *sql.DB {
 	}
 
 	return pgConn
+}
+
+func AssertPolling(t *testing.T, got, want []model.Game) {
+	t.Helper()
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %v, want %v", got, want)
+	}
 }
