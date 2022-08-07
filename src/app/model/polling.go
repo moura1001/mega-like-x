@@ -6,8 +6,10 @@ import (
 	"io"
 )
 
-func NewGamePolling(rdr io.Reader) ([]Game, error) {
-	var polling []Game
+type Polling []Game
+
+func NewGamePolling(rdr io.Reader) (Polling, error) {
+	var polling Polling
 
 	err := json.NewDecoder(rdr).Decode(&polling)
 	if err != nil {

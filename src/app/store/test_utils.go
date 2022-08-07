@@ -50,7 +50,7 @@ func getPostgresConnection(t *testing.T) *sql.DB {
 	return pgConn
 }
 
-func AssertPolling(t *testing.T, got, want []model.Game) {
+func AssertPolling(t *testing.T, got, want model.Polling) {
 	t.Helper()
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %v, want %v", got, want)

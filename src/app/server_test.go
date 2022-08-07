@@ -13,7 +13,7 @@ import (
 type StubGameStore struct {
 	likes     map[string]int
 	likeCalls []string
-	polling   []model.Game
+	polling   model.Polling
 }
 
 func (s *StubGameStore) GetGameLikes(name string) int {
@@ -24,7 +24,7 @@ func (s *StubGameStore) RecordLike(name string) {
 	s.likeCalls = append(s.likeCalls, name)
 }
 
-func (s *StubGameStore) GetPolling() []model.Game {
+func (s *StubGameStore) GetPolling() model.Polling {
 	return s.polling
 }
 
@@ -100,7 +100,7 @@ func TestStoreLikes(t *testing.T) {
 }
 
 func TestPolling(t *testing.T) {
-	wantedGames := []model.Game{
+	wantedGames := model.Polling{
 		{Name: "x1", Likes: 30},
 		{Name: "x4", Likes: 12},
 		{Name: "x6", Likes: 23},
@@ -155,7 +155,7 @@ func newGetPollingRequest() *http.Request {
 	return req
 }
 
-func getPollingFromResponse(t *testing.T, body io.Reader) (polling []model.Game) {
+func getPollingFromResponse(t *testing.T, body io.Reader) (polling model.Polling) {
 	t.Helper()
 
 	polling, err := model.NewGamePolling(body)

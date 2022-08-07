@@ -31,7 +31,7 @@ func TestRecordingLikesAndRetrievingThemMemory(t *testing.T) {
 
 		assertStatus(t, response.Code, http.StatusOK)
 		got := getPollingFromResponse(t, response.Body)
-		want := []model.Game{
+		want := model.Polling{
 			{Name: "x4", Likes: 4},
 		}
 		store.AssertPolling(t, got, want)
@@ -67,7 +67,7 @@ func TestRecordingLikesAndRetrievingThemFromPostgres(t *testing.T) {
 
 		assertStatus(t, response.Code, http.StatusOK)
 		got := getPollingFromResponse(t, response.Body)
-		want := []model.Game{
+		want := model.Polling{
 			{Name: "x8", Likes: 2},
 		}
 		store.AssertPolling(t, got, want)
