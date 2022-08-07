@@ -18,3 +18,13 @@ func NewGamePolling(rdr io.Reader) (Polling, error) {
 
 	return polling, err
 }
+
+func (p Polling) Find(name string) *Game {
+	for i, game := range p {
+		if game.Name == name {
+			return &p[i]
+		}
+	}
+
+	return nil
+}

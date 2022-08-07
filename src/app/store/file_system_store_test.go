@@ -20,7 +20,7 @@ func TestFileSystemStore(t *testing.T) {
 		store := NewFileSystemGameStore(database)
 
 		got := store.GetPolling()
-		want := []model.Game{
+		want := model.Polling{
 			{Name: "x2", Likes: 11},
 			{Name: "x3", Likes: 10},
 		}
@@ -42,6 +42,23 @@ func TestFileSystemStore(t *testing.T) {
 
 		got := store.GetGameLikes("x7")
 		want := 3
+
+		AssertLikesValue(t, got, want)
+	})
+
+	t.Run("store likes for existing game", func(t *testing.T) {
+		database, cleanDatabase := createTempFile(t, `[
+			{"Name": "x1", "Likes": 6},
+			{"Name": "x5", "Likes": 1}
+		]`)
+		defer cleanDatabase()
+
+		store := NewFileSystemGameStore(database)
+
+		store.RecordLike("x1")
+
+		got := store.GetGameLikes("x1")
+		want := 7
 
 		AssertLikesValue(t, got, want)
 	})

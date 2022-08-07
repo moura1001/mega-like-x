@@ -1,6 +1,7 @@
 package store
 
 import (
+	"encoding/json"
 	"io"
 	"moura1001/mega_like_x/src/app/model"
 )
@@ -13,21 +14,31 @@ func NewFileSystemGameStore(database io.ReadWriteSeeker) *FileSystemGameStore {
 	return &FileSystemGameStore{database}
 }
 
-func (f *FileSystemGameStore) GetPolling() []model.Game {
+func (f *FileSystemGameStore) GetPolling() model.Polling {
 	f.database.Seek(0, 0)
 	polling, _ := model.NewGamePolling(f.database)
 	return polling
 }
 
 func (f *FileSystemGameStore) GetGameLikes(name string) int {
-	var likes int
+	game := f.GetPolling().Find(name)
 
-	for _, game := range f.GetPolling() {
-		if game.Name == name {
-			likes = game.Likes
-			break
-		}
+	if game != nil {
+		return game.Likes
 	}
 
-	return likes
+	return 0
+}
+
+func (f *FileSystemGameStore) RecordLike(name string) {
+	polling := f.GetPolling()
+	game := polling.Find(name)
+
+	if game != nil {
+		game.Likes++
+	}
+
+	f.database.Seek(0, 0)
+
+	json.NewEncoder(f.database).Encode(polling)
 }
