@@ -3,7 +3,6 @@ package store
 import (
 	"database/sql"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"moura1001/mega_like_x/src/app/model"
 	"os"
@@ -67,7 +66,7 @@ func AssertLikesValue(t *testing.T, got, want int) {
 	}
 }
 
-func CreateTempFile(t *testing.T, initialData string) (io.ReadWriteSeeker, func()) {
+func CreateTempFile(t *testing.T, initialData string) (*os.File, func()) {
 	t.Helper()
 
 	tmpFile, err := ioutil.TempFile("", "db")

@@ -3,9 +3,9 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"moura1001/mega_like_x/src/app/store"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 )
@@ -15,7 +15,7 @@ type GameServer struct {
 	http.Handler
 }
 
-func NewGameServer(storeType store.StoreType, fileDB io.ReadWriteSeeker) *GameServer {
+func NewGameServer(storeType store.StoreType, fileDB *os.File) *GameServer {
 	server := new(GameServer)
 
 	switch storeType {
