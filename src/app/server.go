@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"moura1001/mega_like_x/src/app/store"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 type GameServer struct {
@@ -22,9 +24,9 @@ func NewGameServer(storeType store.StoreType) *GameServer {
 		server.store = store.NewPostgresGameStore()
 	}
 
-	router := http.NewServeMux()
-	router.Handle("/games", http.HandlerFunc(server.gamesHandler))
-	router.Handle("/likes/", http.HandlerFunc(server.likesHandler))
+	router := mux.NewRouter()
+	router.HandleFunc("/games", server.gamesHandler)
+	router.HandleFunc("/likes/{game}", server.likesHandler)
 
 	server.Handler = router
 
@@ -38,7 +40,8 @@ func (g *GameServer) gamesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (g *GameServer) likesHandler(w http.ResponseWriter, r *http.Request) {
-	game := r.URL.Path[len("/likes/"):]
+	vars := mux.Vars(r)
+	game := vars["game"]
 
 	switch r.Method {
 	case http.MethodGet:
