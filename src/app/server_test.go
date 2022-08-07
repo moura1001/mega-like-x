@@ -1,7 +1,6 @@
 package app
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"moura1001/mega_like_x/src/app/model"
@@ -159,9 +158,9 @@ func newGetPollingRequest() *http.Request {
 func getPollingFromResponse(t *testing.T, body io.Reader) (polling []model.Game) {
 	t.Helper()
 
-	err := json.NewDecoder(body).Decode(&polling)
+	polling, err := model.NewGamePolling(body)
 	if err != nil {
-		t.Fatalf("unable to parse response from server '%v' into slice of Vote: '%v'", body, err)
+		t.Fatalf("unable to parse response from server '%v' to get polling: '%v'", body, err)
 	}
 
 	return
