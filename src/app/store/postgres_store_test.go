@@ -54,4 +54,16 @@ func TestStoreLikes(t *testing.T) {
 		likes = store.GetGameLikes(game)
 		AssertLikesValue(t, likes, 1)
 	})
+
+	t.Run("record like to new games", func(t *testing.T) {
+		game := "x7"
+
+		likes := store.GetGameLikes(game)
+		AssertLikesValue(t, likes, 0)
+
+		store.RecordLike(game)
+
+		likes = store.GetGameLikes(game)
+		AssertLikesValue(t, likes, 1)
+	})
 }

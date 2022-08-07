@@ -20,7 +20,11 @@ func (p *PostgresGameStore) GetGameLikes(name string) int {
 }
 
 func (p *PostgresGameStore) RecordLike(name string) {
-	p.DB.Exec("UPDATE games SET likes=(likes+1) WHERE name=$1", name)
+	result, _ := p.DB.Exec("UPDATE games SET likes=(likes+1) WHERE name=$1", name)
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected <= 0 {
+		p.DB.Exec("INSERT INTO games(name, likes) VALUES($1, 1)", name)
+	}
 }
 
 func (p *PostgresGameStore) GetPolling() model.Polling {

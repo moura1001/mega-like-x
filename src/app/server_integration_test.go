@@ -11,6 +11,7 @@ import (
 func TestRecordingLikesAndRetrievingThemMemory(t *testing.T) {
 	server := NewGameServer(store.IN_MEMORY)
 	game := "x4"
+	newGame := "x6"
 
 	server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(game))
 	server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(game))
@@ -33,6 +34,23 @@ func TestRecordingLikesAndRetrievingThemMemory(t *testing.T) {
 		got := getPollingFromResponse(t, response.Body)
 		want := model.Polling{
 			{Name: "x4", Likes: 4},
+		}
+		store.AssertPolling(t, got, want)
+	})
+
+	t.Run("record user like to new games", func(t *testing.T) {
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(newGame))
+		server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(newGame))
+
+		server.ServeHTTP(response, newGetPollingRequest())
+
+		assertStatus(t, response.Code, http.StatusOK)
+		got := getPollingFromResponse(t, response.Body)
+		want := model.Polling{
+			{Name: "x4", Likes: 4},
+			{Name: "x6", Likes: 2},
 		}
 		store.AssertPolling(t, got, want)
 	})
