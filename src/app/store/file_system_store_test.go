@@ -23,5 +23,8 @@ func TestFileSystemStore(t *testing.T) {
 		}
 
 		AssertPolling(t, got, want)
+
+		got = store.GetPolling()
+		AssertPolling(t, got, want)
 	})
 }
