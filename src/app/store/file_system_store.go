@@ -2,7 +2,6 @@ package store
 
 import (
 	"encoding/json"
-	"io"
 	"moura1001/mega_like_x/src/app/model"
 	"os"
 )
@@ -18,7 +17,7 @@ func (t *tape) Write(p []byte) (n int, err error) {
 }
 
 type FileSystemGameStore struct {
-	database io.Writer
+	database *json.Encoder
 	polling  model.Polling
 }
 
@@ -27,7 +26,7 @@ func NewFileSystemGameStore(database *os.File) *FileSystemGameStore {
 	polling, _ := model.NewGamePolling(database)
 
 	return &FileSystemGameStore{
-		database: &tape{database},
+		database: json.NewEncoder(&tape{database}),
 		polling:  polling,
 	}
 }
@@ -55,5 +54,5 @@ func (f *FileSystemGameStore) RecordLike(name string) {
 		f.polling = append(f.polling, model.Game{Name: name, Likes: 1})
 	}
 
-	json.NewEncoder(f.database).Encode(f.polling)
+	f.database.Encode(f.polling)
 }
