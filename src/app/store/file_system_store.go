@@ -36,6 +36,8 @@ func (f *FileSystemGameStore) RecordLike(name string) {
 
 	if game != nil {
 		game.Likes++
+	} else {
+		polling = append(polling, model.Game{Name: name, Likes: 1})
 	}
 
 	f.database.Seek(0, 0)

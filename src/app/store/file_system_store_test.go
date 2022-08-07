@@ -62,6 +62,23 @@ func TestFileSystemStore(t *testing.T) {
 
 		AssertLikesValue(t, got, want)
 	})
+
+	t.Run("store likes for new games", func(t *testing.T) {
+		database, cleanDatabase := createTempFile(t, `[
+			{"Name": "x4", "Likes": 0},
+			{"Name": "x6", "Likes": 7}
+		]`)
+		defer cleanDatabase()
+
+		store := NewFileSystemGameStore(database)
+
+		store.RecordLike("x1")
+
+		got := store.GetGameLikes("x1")
+		want := 1
+
+		AssertLikesValue(t, got, want)
+	})
 }
 
 func createTempFile(t *testing.T, initialData string) (io.ReadWriteSeeker, func()) {
