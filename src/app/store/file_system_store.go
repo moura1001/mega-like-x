@@ -6,10 +6,10 @@ import (
 )
 
 type FileSystemGameStore struct {
-	database io.ReadSeeker
+	database io.ReadWriteSeeker
 }
 
-func NewFileSystemGameStore(database io.ReadSeeker) *FileSystemGameStore {
+func NewFileSystemGameStore(database io.ReadWriteSeeker) *FileSystemGameStore {
 	return &FileSystemGameStore{database}
 }
 
