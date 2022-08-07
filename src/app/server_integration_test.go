@@ -53,9 +53,23 @@ func TestRecordingLikesAndRetrievingThemFromPostgres(t *testing.T) {
 	server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(game))
 	server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(game))
 
-	response := httptest.NewRecorder()
-	server.ServeHTTP(response, newGetLikesRequest(game))
+	t.Run("get likes", func(t *testing.T) {
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, newGetLikesRequest(game))
 
-	assertStatus(t, response.Code, http.StatusOK)
-	assertResponseBody(t, response.Body.String(), "2")
+		assertStatus(t, response.Code, http.StatusOK)
+		assertResponseBody(t, response.Body.String(), "2")
+	})
+
+	t.Run("get polling", func(t *testing.T) {
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, newGetPollingRequest())
+
+		assertStatus(t, response.Code, http.StatusOK)
+		got := getPollingFromResponse(t, response.Body)
+		want := []model.Game{
+			{Name: "x8", Likes: 2},
+		}
+		assertPolling(t, got, want)
+	})
 }

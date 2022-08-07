@@ -23,6 +23,17 @@ func (p *PostgresGameStore) RecordLike(name string) {
 	p.DB.Exec("UPDATE games SET likes=(likes+1) WHERE name=$1", name)
 }
 
-func (i *PostgresGameStore) GetPolling() []model.Game {
-	return nil
+func (p *PostgresGameStore) GetPolling() []model.Game {
+	rows, _ := p.DB.Query("SELECT name, likes FROM games")
+	defer rows.Close()
+
+	polling := []model.Game{}
+
+	for rows.Next() {
+		var game model.Game
+		rows.Scan(&game.Name, &game.Likes)
+		polling = append(polling, game)
+	}
+
+	return polling
 }
