@@ -1,6 +1,9 @@
 package store
 
-import "moura1001/mega_like_x/src/app/model"
+import (
+	"moura1001/mega_like_x/src/app/model"
+	"sort"
+)
 
 type InMemoryGameStore struct {
 	store map[string]int
@@ -23,5 +26,9 @@ func (i *InMemoryGameStore) GetPolling() model.Polling {
 	for name, likes := range i.store {
 		polling = append(polling, model.Game{Name: name, Likes: likes})
 	}
+
+	sort.Slice(polling, func(i, j int) bool {
+		return polling[i].Likes > polling[j].Likes
+	})
 	return polling
 }

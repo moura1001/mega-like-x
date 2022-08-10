@@ -80,4 +80,27 @@ func TestFileSystemStore(t *testing.T) {
 
 		AssertLikesValue(t, got, want)
 	})
+
+	t.Run("polling sorted", func(t *testing.T) {
+		database, cleanDatabase := CreateTempFile(t, `[
+			{"Name": "corrupted", "Likes": 1},
+			{"Name": "x7", "Likes": 11}
+		]`)
+		defer cleanDatabase()
+
+		store, err := NewFileSystemGameStore(database)
+		AssertNoError(t, err)
+
+		got := store.GetPolling()
+		want := model.Polling{
+			{Name: "x7", Likes: 11},
+			{Name: "corrupted", Likes: 1},
+		}
+
+		AssertPolling(t, got, want)
+
+		// read again
+		got = store.GetPolling()
+		AssertPolling(t, got, want)
+	})
 }

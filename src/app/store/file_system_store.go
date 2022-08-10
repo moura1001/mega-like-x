@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"moura1001/mega_like_x/src/app/model"
 	"os"
+	"sort"
 )
 
 type tape struct {
@@ -58,6 +59,9 @@ func initialzeGameDBFile(file *os.File) error {
 }
 
 func (f *FileSystemGameStore) GetPolling() model.Polling {
+	sort.Slice(f.polling, func(i, j int) bool {
+		return f.polling[i].Likes > f.polling[j].Likes
+	})
 	return f.polling
 }
 

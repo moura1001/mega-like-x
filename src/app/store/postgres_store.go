@@ -28,7 +28,7 @@ func (p *PostgresGameStore) RecordLike(name string) {
 }
 
 func (p *PostgresGameStore) GetPolling() model.Polling {
-	rows, _ := p.DB.Query("SELECT name, likes FROM games")
+	rows, _ := p.DB.Query("SELECT name, likes FROM games ORDER BY likes DESC")
 	defer rows.Close()
 
 	polling := model.Polling{}

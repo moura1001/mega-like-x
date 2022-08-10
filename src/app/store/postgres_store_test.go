@@ -1,6 +1,9 @@
 package store
 
-import "testing"
+import (
+	"moura1001/mega_like_x/src/app/model"
+	"testing"
+)
 
 func TestConnectionPing(t *testing.T) {
 	store := SetupPostgresStoreTests(t)
@@ -65,5 +68,18 @@ func TestStoreLikes(t *testing.T) {
 
 		likes = store.GetGameLikes(game)
 		AssertLikesValue(t, likes, 1)
+	})
+
+	t.Run("likes sorted", func(t *testing.T) {
+		store.RecordLike("x7")
+		store.RecordLike("x7")
+
+		got := store.GetPolling()
+		want := model.Polling{
+			{Name: "x7", Likes: 3},
+			{Name: "x4", Likes: 1},
+		}
+
+		AssertPolling(t, got, want)
 	})
 }
