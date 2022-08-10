@@ -23,16 +23,10 @@ type FileSystemGameStore struct {
 }
 
 func NewFileSystemGameStore(database *os.File) (*FileSystemGameStore, error) {
-	database.Seek(0, 0)
 
-	fileInfo, err := database.Stat()
+	err := initialzeGameDBFile(database)
 	if err != nil {
-		return nil, fmt.Errorf("problem getting file info from file '%s': %v", database.Name(), err)
-	}
-
-	if fileInfo.Size() == 0 {
-		database.Write([]byte("[]"))
-		database.Seek(0, 0)
+		return nil, fmt.Errorf("problem initializing game db file: %v", err)
 	}
 
 	polling, err := model.NewGamePolling(database)
@@ -45,6 +39,22 @@ func NewFileSystemGameStore(database *os.File) (*FileSystemGameStore, error) {
 		database: json.NewEncoder(&tape{database}),
 		polling:  polling,
 	}, nil
+}
+
+func initialzeGameDBFile(file *os.File) error {
+	file.Seek(0, 0)
+
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return fmt.Errorf("problem getting file info from file '%s': %v", file.Name(), err)
+	}
+
+	if fileInfo.Size() == 0 {
+		file.Write([]byte("[]"))
+		file.Seek(0, 0)
+	}
+
+	return nil
 }
 
 func (f *FileSystemGameStore) GetPolling() model.Polling {

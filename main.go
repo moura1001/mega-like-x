@@ -8,11 +8,10 @@ import (
 )
 
 func main() {
-	const storeType = store.IN_MEMORY
-	server, err := app.NewGameServer(storeType, nil)
+	server, err := app.NewGameServer(store.IN_MEMORY, nil)
 
 	if err != nil {
-		log.Fatalf("problem creating '%s' game store: %v", storeType, err)
+		log.Fatalf("server initialization error: %v", err)
 	}
 
 	if err := http.ListenAndServe(":4000", server); err != nil {
