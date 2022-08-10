@@ -9,7 +9,9 @@ import (
 )
 
 func TestRecordingLikesAndRetrievingThemMemory(t *testing.T) {
-	server := NewGameServer(store.IN_MEMORY, nil)
+	server, err := NewGameServer(store.IN_MEMORY, nil)
+	store.AssertNoError(t, err)
+
 	game := "x4"
 	newGame := "x6"
 
@@ -57,7 +59,9 @@ func TestRecordingLikesAndRetrievingThemMemory(t *testing.T) {
 }
 
 func TestRecordingLikesAndRetrievingThemFromPostgres(t *testing.T) {
-	server := NewGameServer(store.POSTGRES, nil)
+	server, err := NewGameServer(store.POSTGRES, nil)
+	store.AssertNoError(t, err)
+
 	server.store = store.SetupPostgresStoreTests(t)
 
 	game := "x8"
@@ -98,7 +102,8 @@ func TestRecordingLikesAndRetrievingThemFromFile(t *testing.T) {
 	]`)
 	defer cleanDatabase()
 
-	server := NewGameServer(store.FILE_SYSTEM, database)
+	server, err := NewGameServer(store.FILE_SYSTEM, database)
+	store.AssertNoError(t, err)
 
 	game := "x1"
 	newGame := "x2"
@@ -142,5 +147,14 @@ func TestRecordingLikesAndRetrievingThemFromFile(t *testing.T) {
 			{Name: "x2", Likes: 3},
 		}
 		store.AssertPolling(t, got, want)
+	})
+
+	t.Run("works with an empty file", func(t *testing.T) {
+		database, cleanDatabase := store.CreateTempFile(t, "")
+		defer cleanDatabase()
+
+		_, err := store.NewFileSystemGameStore(database)
+
+		store.AssertNoError(t, err)
 	})
 }

@@ -15,7 +15,10 @@ type GameServer struct {
 	http.Handler
 }
 
-func NewGameServer(storeType store.StoreType, fileDB *os.File) *GameServer {
+func NewGameServer(storeType store.StoreType, fileDB *os.File) (*GameServer, error) {
+
+	var err error = nil
+
 	server := new(GameServer)
 
 	switch storeType {
@@ -24,7 +27,7 @@ func NewGameServer(storeType store.StoreType, fileDB *os.File) *GameServer {
 	case store.POSTGRES:
 		server.store = store.NewPostgresGameStore()
 	case store.FILE_SYSTEM:
-		server.store = store.NewFileSystemGameStore(fileDB)
+		server.store, err = store.NewFileSystemGameStore(fileDB)
 	}
 
 	router := mux.NewRouter()
@@ -33,7 +36,7 @@ func NewGameServer(storeType store.StoreType, fileDB *os.File) *GameServer {
 
 	server.Handler = router
 
-	return server
+	return server, err
 }
 
 func (g *GameServer) gamesHandler(w http.ResponseWriter, r *http.Request) {

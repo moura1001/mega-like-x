@@ -14,7 +14,8 @@ func TestFileSystemStore(t *testing.T) {
 		]`)
 		defer cleanDatabase()
 
-		store := NewFileSystemGameStore(database)
+		store, err := NewFileSystemGameStore(database)
+		AssertNoError(t, err)
 
 		got := store.GetPolling()
 		want := model.Polling{
@@ -35,7 +36,8 @@ func TestFileSystemStore(t *testing.T) {
 		]`)
 		defer cleanDatabase()
 
-		store := NewFileSystemGameStore(database)
+		store, err := NewFileSystemGameStore(database)
+		AssertNoError(t, err)
 
 		got := store.GetGameLikes("x7")
 		want := 3
@@ -50,7 +52,8 @@ func TestFileSystemStore(t *testing.T) {
 		]`)
 		defer cleanDatabase()
 
-		store := NewFileSystemGameStore(database)
+		store, err := NewFileSystemGameStore(database)
+		AssertNoError(t, err)
 
 		store.RecordLike("x1")
 
@@ -67,7 +70,8 @@ func TestFileSystemStore(t *testing.T) {
 		]`)
 		defer cleanDatabase()
 
-		store := NewFileSystemGameStore(database)
+		store, err := NewFileSystemGameStore(database)
+		AssertNoError(t, err)
 
 		store.RecordLike("x1")
 

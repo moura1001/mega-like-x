@@ -2,6 +2,7 @@ package store
 
 import (
 	"encoding/json"
+	"fmt"
 	"moura1001/mega_like_x/src/app/model"
 	"os"
 )
@@ -21,14 +22,29 @@ type FileSystemGameStore struct {
 	polling  model.Polling
 }
 
-func NewFileSystemGameStore(database *os.File) *FileSystemGameStore {
+func NewFileSystemGameStore(database *os.File) (*FileSystemGameStore, error) {
 	database.Seek(0, 0)
-	polling, _ := model.NewGamePolling(database)
+
+	fileInfo, err := database.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("problem getting file info from file '%s': %v", database.Name(), err)
+	}
+
+	if fileInfo.Size() == 0 {
+		database.Write([]byte("[]"))
+		database.Seek(0, 0)
+	}
+
+	polling, err := model.NewGamePolling(database)
+
+	if err != nil {
+		return nil, fmt.Errorf("problem loading game store from file '%s': %v", database.Name(), err)
+	}
 
 	return &FileSystemGameStore{
 		database: json.NewEncoder(&tape{database}),
 		polling:  polling,
-	}
+	}, nil
 }
 
 func (f *FileSystemGameStore) GetPolling() model.Polling {

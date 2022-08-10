@@ -83,3 +83,11 @@ func CreateTempFile(t *testing.T, initialData string) (*os.File, func()) {
 
 	return tmpFile, removeFile
 }
+
+func AssertNoError(t *testing.T, err error) {
+	t.Helper()
+
+	if err != nil {
+		t.Fatalf("didnt expect an error but got one: %v", err)
+	}
+}

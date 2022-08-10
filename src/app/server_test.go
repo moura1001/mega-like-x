@@ -37,7 +37,7 @@ func TestGETLikes(t *testing.T) {
 		nil,
 		nil,
 	}
-	server := NewGameServer("", nil)
+	server, _ := NewGameServer("", nil)
 	server.store = &st
 
 	t.Run("returns Mega Man X's likes", func(t *testing.T) {
@@ -76,7 +76,7 @@ func TestStoreLikes(t *testing.T) {
 		nil,
 		nil,
 	}
-	server := NewGameServer("", nil)
+	server, _ := NewGameServer("", nil)
 	server.store = &st
 
 	t.Run("it records likes when POST", func(t *testing.T) {
@@ -107,7 +107,7 @@ func TestPolling(t *testing.T) {
 	}
 
 	st := StubGameStore{nil, nil, wantedGames}
-	server := NewGameServer("", nil)
+	server, _ := NewGameServer("", nil)
 	server.store = &st
 
 	t.Run("it returns the game table as JSON", func(t *testing.T) {
