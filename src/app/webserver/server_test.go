@@ -11,13 +11,13 @@ import (
 )
 
 func TestGETLikes(t *testing.T) {
-	st := StubGameStore{
-		map[string]int{
+	st := store.StubGameStore{
+		Likes: map[string]int{
 			"x1": 32,
 			"x2": 64,
 		},
-		nil,
-		nil,
+		LikeCalls: nil,
+		Polling:   nil,
 	}
 	server, _ := NewGameServer("", nil)
 	server.store = &st
@@ -53,10 +53,10 @@ func TestGETLikes(t *testing.T) {
 }
 
 func TestStoreLikes(t *testing.T) {
-	st := StubGameStore{
-		map[string]int{},
-		nil,
-		nil,
+	st := store.StubGameStore{
+		Likes:     map[string]int{},
+		LikeCalls: nil,
+		Polling:   nil,
 	}
 	server, _ := NewGameServer("", nil)
 	server.store = &st
@@ -71,13 +71,8 @@ func TestStoreLikes(t *testing.T) {
 
 		assertStatus(t, response.Code, http.StatusAccepted)
 
-		if len(st.likeCalls) != 1 {
-			t.Errorf("got %d calls to RecordLike, want %d", len(st.likeCalls), 1)
-		}
+		store.AssertGameLike(t, &st, "x6")
 
-		if st.likeCalls[0] != game {
-			t.Errorf("did not store correct liked game, got '%s' want '%s'", st.likeCalls[0], game)
-		}
 	})
 }
 
@@ -88,7 +83,7 @@ func TestPolling(t *testing.T) {
 		{Name: "x6", Likes: 23},
 	}
 
-	st := StubGameStore{nil, nil, wantedGames}
+	st := store.StubGameStore{Likes: nil, LikeCalls: nil, Polling: wantedGames}
 	server, _ := NewGameServer("", nil)
 	server.store = &st
 

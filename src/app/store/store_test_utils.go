@@ -12,6 +12,24 @@ import (
 	_ "github.com/lib/pq"
 )
 
+type StubGameStore struct {
+	Likes     map[string]int
+	LikeCalls []string
+	Polling   model.Polling
+}
+
+func (s *StubGameStore) GetGameLikes(name string) int {
+	return s.Likes[name]
+}
+
+func (s *StubGameStore) RecordLike(name string) {
+	s.LikeCalls = append(s.LikeCalls, name)
+}
+
+func (s *StubGameStore) GetPolling() model.Polling {
+	return s.Polling
+}
+
 const (
 	host     = "localhost"
 	user     = "usertest"
@@ -89,5 +107,17 @@ func AssertNoError(t *testing.T, err error) {
 
 	if err != nil {
 		t.Fatalf("didnt expect an error but got one: %v", err)
+	}
+}
+
+func AssertGameLike(t *testing.T, store *StubGameStore, game string) {
+	t.Helper()
+
+	if len(store.LikeCalls) != 1 {
+		t.Errorf("got %d calls to RecordLike, want %d", len(store.LikeCalls), 1)
+	}
+
+	if store.LikeCalls[0] != game {
+		t.Errorf("did not store correct liked game, got '%s' want '%s'", store.LikeCalls[0], game)
 	}
 }
