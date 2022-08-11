@@ -1,4 +1,4 @@
-package app
+package webserver
 
 import (
 	"moura1001/mega_like_x/src/app/model"

@@ -2,13 +2,13 @@ package main
 
 import (
 	"log"
-	"moura1001/mega_like_x/src/app"
 	"moura1001/mega_like_x/src/app/store"
+	"moura1001/mega_like_x/src/app/webserver"
 	"net/http"
 )
 
 func main() {
-	server, err := app.NewGameServer(store.IN_MEMORY, nil)
+	server, err := webserver.NewGameServer(store.IN_MEMORY, nil)
 
 	if err != nil {
 		log.Fatalf("server initialization error: %v", err)

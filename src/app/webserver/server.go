@@ -1,4 +1,4 @@
-package app
+package webserver
 
 import (
 	"encoding/json"
