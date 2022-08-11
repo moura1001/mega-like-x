@@ -2,11 +2,12 @@ package store
 
 import (
 	"io/ioutil"
+	utilstestingfilestore "moura1001/mega_like_x/src/app/utils/test/file_store"
 	"testing"
 )
 
 func TestTape_Write(t *testing.T) {
-	file, clean := CreateTempFile(t, "abcdef")
+	file, clean := utilstestingfilestore.CreateTempFile(t, "abcdef")
 	defer clean()
 
 	tape := &tape{file}

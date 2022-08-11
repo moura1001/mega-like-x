@@ -3,6 +3,9 @@ package webserver
 import (
 	"moura1001/mega_like_x/src/app/model"
 	"moura1001/mega_like_x/src/app/store"
+	utilstestingfilestore "moura1001/mega_like_x/src/app/utils/test/file_store"
+	utilstestingpgstore "moura1001/mega_like_x/src/app/utils/test/pg_store"
+	utilstesting "moura1001/mega_like_x/src/app/utils/test/shared"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,59 +13,59 @@ import (
 
 func TestRecordingLikesAndRetrievingThemMemory(t *testing.T) {
 	server, err := NewGameServer(store.IN_MEMORY, nil)
-	store.AssertNoError(t, err)
+	utilstesting.AssertNoError(t, err)
 
 	game := "x4"
 	newGame := "x6"
 
-	server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(game))
-	server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(game))
-	server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(game))
-	server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(game))
+	server.ServeHTTP(httptest.NewRecorder(), utilstesting.NewPostLikeRequest(game))
+	server.ServeHTTP(httptest.NewRecorder(), utilstesting.NewPostLikeRequest(game))
+	server.ServeHTTP(httptest.NewRecorder(), utilstesting.NewPostLikeRequest(game))
+	server.ServeHTTP(httptest.NewRecorder(), utilstesting.NewPostLikeRequest(game))
 
 	t.Run("get likes", func(t *testing.T) {
 		response := httptest.NewRecorder()
-		server.ServeHTTP(response, newGetLikesRequest(game))
+		server.ServeHTTP(response, utilstesting.NewGetLikesRequest(game))
 
-		assertStatus(t, response.Code, http.StatusOK)
-		assertResponseBody(t, response.Body.String(), "4")
+		utilstesting.AssertStatus(t, response.Code, http.StatusOK)
+		utilstesting.AssertResponseBody(t, response.Body.String(), "4")
 	})
 
 	t.Run("get polling", func(t *testing.T) {
 		response := httptest.NewRecorder()
-		server.ServeHTTP(response, newGetPollingRequest())
+		server.ServeHTTP(response, utilstesting.NewGetPollingRequest())
 
-		assertStatus(t, response.Code, http.StatusOK)
-		got := getPollingFromResponse(t, response.Body)
+		utilstesting.AssertStatus(t, response.Code, http.StatusOK)
+		got := utilstesting.GetPollingFromResponse(t, response.Body)
 		want := model.Polling{
 			{Name: "x4", Likes: 4},
 		}
-		store.AssertPolling(t, got, want)
+		utilstesting.AssertPolling(t, got, want)
 	})
 
 	t.Run("record user like to new games", func(t *testing.T) {
 		response := httptest.NewRecorder()
 
-		server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(newGame))
-		server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(newGame))
+		server.ServeHTTP(httptest.NewRecorder(), utilstesting.NewPostLikeRequest(newGame))
+		server.ServeHTTP(httptest.NewRecorder(), utilstesting.NewPostLikeRequest(newGame))
 
-		server.ServeHTTP(response, newGetPollingRequest())
+		server.ServeHTTP(response, utilstesting.NewGetPollingRequest())
 
-		assertStatus(t, response.Code, http.StatusOK)
-		got := getPollingFromResponse(t, response.Body)
+		utilstesting.AssertStatus(t, response.Code, http.StatusOK)
+		got := utilstesting.GetPollingFromResponse(t, response.Body)
 		want := model.Polling{
 			{Name: "x4", Likes: 4},
 			{Name: "x6", Likes: 2},
 		}
-		store.AssertPolling(t, got, want)
+		utilstesting.AssertPolling(t, got, want)
 	})
 }
 
 func TestRecordingLikesAndRetrievingThemFromPostgres(t *testing.T) {
 	server, err := NewGameServer(store.POSTGRES, nil)
-	store.AssertNoError(t, err)
+	utilstesting.AssertNoError(t, err)
 
-	server.store = store.SetupPostgresStoreTests(t)
+	server.store = utilstestingpgstore.SetupPostgresStoreTests(t)
 
 	game := "x8"
 	// cast to Postgres store
@@ -72,89 +75,89 @@ func TestRecordingLikesAndRetrievingThemFromPostgres(t *testing.T) {
 		VALUES	($1)
 	`, game)
 
-	server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(game))
-	server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(game))
+	server.ServeHTTP(httptest.NewRecorder(), utilstesting.NewPostLikeRequest(game))
+	server.ServeHTTP(httptest.NewRecorder(), utilstesting.NewPostLikeRequest(game))
 
 	t.Run("get likes", func(t *testing.T) {
 		response := httptest.NewRecorder()
-		server.ServeHTTP(response, newGetLikesRequest(game))
+		server.ServeHTTP(response, utilstesting.NewGetLikesRequest(game))
 
-		assertStatus(t, response.Code, http.StatusOK)
-		assertResponseBody(t, response.Body.String(), "2")
+		utilstesting.AssertStatus(t, response.Code, http.StatusOK)
+		utilstesting.AssertResponseBody(t, response.Body.String(), "2")
 	})
 
 	t.Run("get polling", func(t *testing.T) {
 		response := httptest.NewRecorder()
-		server.ServeHTTP(response, newGetPollingRequest())
+		server.ServeHTTP(response, utilstesting.NewGetPollingRequest())
 
-		assertStatus(t, response.Code, http.StatusOK)
-		got := getPollingFromResponse(t, response.Body)
+		utilstesting.AssertStatus(t, response.Code, http.StatusOK)
+		got := utilstesting.GetPollingFromResponse(t, response.Body)
 		want := model.Polling{
 			{Name: "x8", Likes: 2},
 		}
-		store.AssertPolling(t, got, want)
+		utilstesting.AssertPolling(t, got, want)
 	})
 }
 
 func TestRecordingLikesAndRetrievingThemFromFile(t *testing.T) {
-	database, cleanDatabase := store.CreateTempFile(t, `[
+	database, cleanDatabase := utilstestingfilestore.CreateTempFile(t, `[
 		{"Name": "x1", "Likes": 4}
 	]`)
 	defer cleanDatabase()
 
 	server, err := NewGameServer(store.FILE_SYSTEM, database)
-	store.AssertNoError(t, err)
+	utilstesting.AssertNoError(t, err)
 
 	game := "x1"
 	newGame := "x2"
 
-	server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(game))
-	server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(game))
+	server.ServeHTTP(httptest.NewRecorder(), utilstesting.NewPostLikeRequest(game))
+	server.ServeHTTP(httptest.NewRecorder(), utilstesting.NewPostLikeRequest(game))
 
 	t.Run("get likes", func(t *testing.T) {
 		response := httptest.NewRecorder()
-		server.ServeHTTP(response, newGetLikesRequest(game))
+		server.ServeHTTP(response, utilstesting.NewGetLikesRequest(game))
 
-		assertStatus(t, response.Code, http.StatusOK)
-		assertResponseBody(t, response.Body.String(), "6")
+		utilstesting.AssertStatus(t, response.Code, http.StatusOK)
+		utilstesting.AssertResponseBody(t, response.Body.String(), "6")
 	})
 
 	t.Run("get polling", func(t *testing.T) {
 		response := httptest.NewRecorder()
-		server.ServeHTTP(response, newGetPollingRequest())
+		server.ServeHTTP(response, utilstesting.NewGetPollingRequest())
 
-		assertStatus(t, response.Code, http.StatusOK)
-		got := getPollingFromResponse(t, response.Body)
+		utilstesting.AssertStatus(t, response.Code, http.StatusOK)
+		got := utilstesting.GetPollingFromResponse(t, response.Body)
 		want := model.Polling{
 			{Name: "x1", Likes: 6},
 		}
-		store.AssertPolling(t, got, want)
+		utilstesting.AssertPolling(t, got, want)
 	})
 
 	t.Run("record user like to new games", func(t *testing.T) {
 		response := httptest.NewRecorder()
 
-		server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(newGame))
-		server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(newGame))
-		server.ServeHTTP(httptest.NewRecorder(), newPostLikeRequest(newGame))
+		server.ServeHTTP(httptest.NewRecorder(), utilstesting.NewPostLikeRequest(newGame))
+		server.ServeHTTP(httptest.NewRecorder(), utilstesting.NewPostLikeRequest(newGame))
+		server.ServeHTTP(httptest.NewRecorder(), utilstesting.NewPostLikeRequest(newGame))
 
-		server.ServeHTTP(response, newGetPollingRequest())
+		server.ServeHTTP(response, utilstesting.NewGetPollingRequest())
 
-		assertStatus(t, response.Code, http.StatusOK)
-		got := getPollingFromResponse(t, response.Body)
+		utilstesting.AssertStatus(t, response.Code, http.StatusOK)
+		got := utilstesting.GetPollingFromResponse(t, response.Body)
 		want := model.Polling{
 			{Name: "x1", Likes: 6},
 			{Name: "x2", Likes: 3},
 		}
-		store.AssertPolling(t, got, want)
+		utilstesting.AssertPolling(t, got, want)
 	})
 
 	t.Run("works with an empty file", func(t *testing.T) {
-		database, cleanDatabase := store.CreateTempFile(t, "")
+		database, cleanDatabase := utilstestingfilestore.CreateTempFile(t, "")
 		defer cleanDatabase()
 
 		_, err := store.NewFileSystemGameStore(database)
 
-		store.AssertNoError(t, err)
+		utilstesting.AssertNoError(t, err)
 	})
 }
