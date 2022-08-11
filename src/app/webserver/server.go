@@ -21,14 +21,7 @@ func NewGameServer(storeType store.StoreType, fileDB *os.File) (*GameServer, err
 
 	server := new(GameServer)
 
-	switch storeType {
-	case store.IN_MEMORY:
-		server.store = store.NewInMemoryGameStore()
-	case store.POSTGRES:
-		server.store = store.NewPostgresGameStore()
-	case store.FILE_SYSTEM:
-		server.store, err = store.NewFileSystemGameStore(fileDB)
-	}
+	server.store, err = store.GetNewGameStore(storeType, fileDB)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/games", server.gamesHandler)
