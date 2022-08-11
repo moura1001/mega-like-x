@@ -19,3 +19,7 @@ func (s *StubGameStore) RecordLike(name string) {
 func (s *StubGameStore) GetPolling() model.Polling {
 	return s.polling
 }
+
+func (s *StubGameStore) GetLikeCalls() []string {
+	return s.likeCalls
+}
