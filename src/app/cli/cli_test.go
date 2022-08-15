@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"bytes"
 	"fmt"
+	apputils "moura1001/mega_like_x/src/app/utils/app"
 	utilstesting "moura1001/mega_like_x/src/app/utils/test/shared"
 	"strings"
 	"testing"
@@ -26,13 +28,15 @@ func (s *SpyBlindAlerter) ScheduleAlertAt(duration time.Duration, amount int) {
 }
 
 var dummySpyAlerter = &SpyBlindAlerter{}
+var dummyStdIn = &bytes.Buffer{}
+var dummyStdOut = &bytes.Buffer{}
 
 func TestCLI(t *testing.T) {
 
 	t.Run("record x1 win from user input", func(t *testing.T) {
-		in := strings.NewReader("x1 wins\n")
+		in := strings.NewReader("5\nx1 wins\n")
 		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
-		cli, _ := NewCLI("", in, nil, dummySpyAlerter)
+		cli, _ := NewCLI("", in, dummyStdOut, nil, dummySpyAlerter)
 		cli.store = &gameStore
 
 		cli.StartPoll()
@@ -41,9 +45,9 @@ func TestCLI(t *testing.T) {
 	})
 
 	t.Run("record x6 win from user input", func(t *testing.T) {
-		in := strings.NewReader("x6 wins\n")
+		in := strings.NewReader("5\nx6 wins\n")
 		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
-		cli, _ := NewCLI("", in, nil, dummySpyAlerter)
+		cli, _ := NewCLI("", in, dummyStdOut, nil, dummySpyAlerter)
 		cli.store = &gameStore
 
 		cli.StartPoll()
@@ -52,11 +56,11 @@ func TestCLI(t *testing.T) {
 	})
 
 	t.Run("it schedules printing of blind values", func(t *testing.T) {
-		in := strings.NewReader("x2 wins\n")
+		in := strings.NewReader("5\nx2 wins\n")
 		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
 		blindAlerter := &SpyBlindAlerter{}
 
-		cli, _ := NewCLI("", in, nil, blindAlerter)
+		cli, _ := NewCLI("", in, dummyStdOut, nil, blindAlerter)
 		cli.store = &gameStore
 
 		cli.StartPoll()
@@ -67,6 +71,44 @@ func TestCLI(t *testing.T) {
 			{20 * time.Minute, 400},
 			{30 * time.Minute, 800},
 			{40 * time.Minute, 1600},
+		}
+
+		for i, want := range cases {
+			t.Run(fmt.Sprint(want), func(t *testing.T) {
+
+				if len(blindAlerter.alerts) <= i {
+					t.Fatalf("alert %d was not scheduled, got: %v", i, blindAlerter.alerts)
+				}
+
+				got := blindAlerter.alerts[i]
+				assertScheduledAlert(t, got, want)
+			})
+		}
+	})
+
+	t.Run("it prompts the user to enter the number of voting options", func(t *testing.T) {
+		stdout := &bytes.Buffer{}
+		in := strings.NewReader("6\n")
+		blindAlerter := &SpyBlindAlerter{}
+
+		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
+		c, _ := NewCLI("", in, stdout, nil, blindAlerter)
+		c.store = &gameStore
+
+		c.StartPoll()
+
+		got := stdout.String()
+		want := apputils.UserPrompt
+
+		if got != want {
+			t.Errorf("got %q, want %q", got, want)
+		}
+
+		cases := []scheduledAlert{
+			{0 * time.Second, 100},
+			{11 * time.Minute, 200},
+			{22 * time.Minute, 400},
+			{33 * time.Minute, 800},
 		}
 
 		for i, want := range cases {

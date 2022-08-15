@@ -2,10 +2,13 @@ package cli
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"moura1001/mega_like_x/src/app/alerter"
 	"moura1001/mega_like_x/src/app/store"
+	apputils "moura1001/mega_like_x/src/app/utils/app"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -13,10 +16,12 @@ import (
 type CLI struct {
 	store   store.GameStore
 	in      *bufio.Scanner
+	out     io.Writer
 	alerter alerter.BlindAlerter
 }
 
-func NewCLI(storeType store.StoreType, userIn io.Reader,
+func NewCLI(storeType store.StoreType,
+	userIn io.Reader, sysOut io.Writer,
 	fileDB *os.File, alerter alerter.BlindAlerter,
 ) (*CLI, error) {
 
@@ -25,6 +30,7 @@ func NewCLI(storeType store.StoreType, userIn io.Reader,
 	cli := new(CLI)
 
 	cli.in = bufio.NewScanner(userIn)
+	cli.out = sysOut
 	cli.store, err = store.GetNewGameStore(storeType, fileDB)
 	cli.alerter = alerter
 
@@ -32,17 +38,24 @@ func NewCLI(storeType store.StoreType, userIn io.Reader,
 }
 
 func (cli *CLI) StartPoll() {
-	cli.scheduleBlindAlerts()
+	fmt.Fprintf(cli.out, apputils.UserPrompt)
+
+	numberOfVotingOptionsInput, _ := strconv.Atoi(cli.readLine())
+
+	cli.scheduleBlindAlerts(numberOfVotingOptionsInput)
+
 	userInput := cli.readLine()
 	cli.store.RecordLike(extractVote(userInput))
 }
 
-func (cli *CLI) scheduleBlindAlerts() {
+func (cli *CLI) scheduleBlindAlerts(numberOfVotingOptionsInput int) {
+	blindIncrement := time.Duration(5+numberOfVotingOptionsInput) * time.Minute
+
 	blinds := []int{100, 200, 400, 800, 1600}
 	blindTime := 0 * time.Second
 	for _, blind := range blinds {
 		cli.alerter.ScheduleAlertAt(blindTime, blind)
-		blindTime += 10 * time.Minute
+		blindTime += blindIncrement
 	}
 }
 
