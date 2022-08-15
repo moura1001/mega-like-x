@@ -32,16 +32,18 @@ func NewCLI(storeType store.StoreType, userIn io.Reader,
 }
 
 func (cli *CLI) StartPoll() {
+	cli.scheduleBlindAlerts()
+	userInput := cli.readLine()
+	cli.store.RecordLike(extractVote(userInput))
+}
+
+func (cli *CLI) scheduleBlindAlerts() {
 	blinds := []int{100, 200, 400, 800, 1600}
 	blindTime := 0 * time.Second
 	for _, blind := range blinds {
 		cli.alerter.ScheduleAlertAt(blindTime, blind)
 		blindTime += 10 * time.Minute
 	}
-
-	cli.alerter.ScheduleAlertAt(5*time.Second, 100)
-	userInput := cli.readLine()
-	cli.store.RecordLike(extractVote(userInput))
 }
 
 func extractVote(userInput string) string {
