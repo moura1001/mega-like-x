@@ -10,7 +10,7 @@ import (
 
 type CLI struct {
 	store store.GameStore
-	in    io.Reader
+	in    *bufio.Scanner
 }
 
 func NewCLI(storeType store.StoreType, userIn io.Reader, fileDB *os.File) (*CLI, error) {
@@ -19,7 +19,7 @@ func NewCLI(storeType store.StoreType, userIn io.Reader, fileDB *os.File) (*CLI,
 
 	cli := new(CLI)
 
-	cli.in = userIn
+	cli.in = bufio.NewScanner(userIn)
 
 	cli.store, err = store.GetNewGameStore(storeType, fileDB)
 
@@ -27,11 +27,15 @@ func NewCLI(storeType store.StoreType, userIn io.Reader, fileDB *os.File) (*CLI,
 }
 
 func (cli *CLI) StartPoll() {
-	reader := bufio.NewScanner(cli.in)
-	reader.Scan()
-	cli.store.RecordLike(extractVote(reader.Text()))
+	userInput := cli.readLine()
+	cli.store.RecordLike(extractVote(userInput))
 }
 
 func extractVote(userInput string) string {
-	return strings.Replace(userInput, " like", "", 1)
+	return strings.Replace(userInput, " wins", "", 1)
+}
+
+func (cli *CLI) readLine() string {
+	cli.in.Scan()
+	return cli.in.Text()
 }
