@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"moura1001/mega_like_x/src/app/alerter"
 	"moura1001/mega_like_x/src/app/cli"
+	"moura1001/mega_like_x/src/app/poll"
 	"moura1001/mega_like_x/src/app/store"
 	"os"
 )
@@ -13,10 +14,12 @@ func main() {
 	fmt.Println("Type '{Game} wins' to record a win")
 
 	store := store.NewInMemoryGameStore()
-	poll := cli.NewCLI(
-		store, os.Stdin, nil,
+	poll := poll.NewPoll(
+		store,
 		alerter.BlindAlerterFunc(alerter.StdOutAlerter),
 	)
 
-	poll.StartPoll()
+	cli := cli.NewCLI(os.Stdin, nil, poll)
+
+	cli.StartPoll()
 }

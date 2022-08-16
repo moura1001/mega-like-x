@@ -4,9 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"moura1001/mega_like_x/src/app/alerter"
 	"moura1001/mega_like_x/src/app/poll"
-	"moura1001/mega_like_x/src/app/store"
 	apputils "moura1001/mega_like_x/src/app/utils/app"
 	"strconv"
 	"strings"
@@ -18,15 +16,12 @@ type CLI struct {
 	poll *poll.Poll
 }
 
-func NewCLI(store store.GameStore,
-	userIn io.Reader, sysOut io.Writer,
-	alerter alerter.BlindAlerter,
-) *CLI {
+func NewCLI(userIn io.Reader, sysOut io.Writer, poll *poll.Poll) *CLI {
 
 	return &CLI{
 		in:   bufio.NewScanner(userIn),
 		out:  sysOut,
-		poll: poll.NewPoll(store, alerter),
+		poll: poll,
 	}
 }
 

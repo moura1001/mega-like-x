@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"moura1001/mega_like_x/src/app/cli"
+	"moura1001/mega_like_x/src/app/poll"
 	apputils "moura1001/mega_like_x/src/app/utils/app"
 	utilstesting "moura1001/mega_like_x/src/app/utils/test/shared"
 	"strings"
@@ -36,7 +37,9 @@ func TestCLI(t *testing.T) {
 	t.Run("record x1 win from user input", func(t *testing.T) {
 		in := strings.NewReader("5\nx1 wins\n")
 		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
-		cli := cli.NewCLI(&gameStore, in, dummyStdOut, dummySpyAlerter)
+		poll := poll.NewPoll(&gameStore, dummySpyAlerter)
+
+		cli := cli.NewCLI(in, dummyStdOut, poll)
 
 		cli.StartPoll()
 
@@ -46,7 +49,9 @@ func TestCLI(t *testing.T) {
 	t.Run("record x6 win from user input", func(t *testing.T) {
 		in := strings.NewReader("5\nx6 wins\n")
 		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
-		cli := cli.NewCLI(&gameStore, in, dummyStdOut, dummySpyAlerter)
+		poll := poll.NewPoll(&gameStore, dummySpyAlerter)
+
+		cli := cli.NewCLI(in, dummyStdOut, poll)
 
 		cli.StartPoll()
 
@@ -57,8 +62,9 @@ func TestCLI(t *testing.T) {
 		in := strings.NewReader("5\nx2 wins\n")
 		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
 		blindAlerter := &SpyBlindAlerter{}
+		poll := poll.NewPoll(&gameStore, blindAlerter)
 
-		cli := cli.NewCLI(&gameStore, in, dummyStdOut, blindAlerter)
+		cli := cli.NewCLI(in, dummyStdOut, poll)
 
 		cli.StartPoll()
 
@@ -87,9 +93,10 @@ func TestCLI(t *testing.T) {
 		stdout := &bytes.Buffer{}
 		in := strings.NewReader("6\n")
 		blindAlerter := &SpyBlindAlerter{}
-
 		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
-		c := cli.NewCLI(&gameStore, in, stdout, blindAlerter)
+		poll := poll.NewPoll(&gameStore, blindAlerter)
+
+		c := cli.NewCLI(in, stdout, poll)
 
 		c.StartPoll()
 
