@@ -28,7 +28,11 @@ func NewCLI(userIn io.Reader, sysOut io.Writer, poll poll.Poll) *CLI {
 func (cli *CLI) StartPoll() {
 	fmt.Fprintf(cli.out, apputils.UserPrompt)
 
-	numberOfVotingOptionsInput, _ := strconv.Atoi(cli.readLine())
+	numberOfVotingOptionsInput, err := strconv.Atoi(cli.readLine())
+	if err != nil {
+		fmt.Fprintf(cli.out, apputils.BadUserInputErrMsg)
+		return
+	}
 
 	cli.poll.Start(numberOfVotingOptionsInput)
 

@@ -32,4 +32,25 @@ func TestCLI(t *testing.T) {
 		}
 	})
 
+	t.Run("it prints an error when a non numeric value is entered and does not start the poll", func(t *testing.T) {
+		stdout := &bytes.Buffer{}
+		in := strings.NewReader("x7\n")
+		poll := &utilstesting.PollSpy{}
+
+		c := cli.NewCLI(in, stdout, poll)
+
+		c.StartPoll()
+
+		if poll.StartCalled {
+			t.Errorf("poll should not have started")
+		}
+
+		gotPrompt := stdout.String()
+		wantPrompt := apputils.UserPrompt + apputils.BadUserInputErrMsg
+
+		if gotPrompt != wantPrompt {
+			t.Errorf("got '%s', want '%s'", gotPrompt, wantPrompt)
+		}
+	})
+
 }
