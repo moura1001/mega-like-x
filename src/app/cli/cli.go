@@ -13,10 +13,10 @@ import (
 type CLI struct {
 	in   *bufio.Scanner
 	out  io.Writer
-	poll *poll.Poll
+	poll poll.Poll
 }
 
-func NewCLI(userIn io.Reader, sysOut io.Writer, poll *poll.Poll) *CLI {
+func NewCLI(userIn io.Reader, sysOut io.Writer, poll poll.Poll) *CLI {
 
 	return &CLI{
 		in:   bufio.NewScanner(userIn),

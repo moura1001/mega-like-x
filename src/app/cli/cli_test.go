@@ -18,7 +18,7 @@ func TestCLI(t *testing.T) {
 	t.Run("record x1 win from user input", func(t *testing.T) {
 		in := strings.NewReader("5\nx1 wins\n")
 		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
-		poll := poll.NewPoll(&gameStore, dummySpyAlerter)
+		poll := poll.NewMegaLike(&gameStore, dummySpyAlerter)
 
 		cli := cli.NewCLI(in, dummyStdOut, poll)
 
@@ -30,7 +30,7 @@ func TestCLI(t *testing.T) {
 	t.Run("record x6 win from user input", func(t *testing.T) {
 		in := strings.NewReader("5\nx6 wins\n")
 		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
-		poll := poll.NewPoll(&gameStore, dummySpyAlerter)
+		poll := poll.NewMegaLike(&gameStore, dummySpyAlerter)
 
 		cli := cli.NewCLI(in, dummyStdOut, poll)
 
@@ -44,7 +44,7 @@ func TestCLI(t *testing.T) {
 		in := strings.NewReader("6\n")
 		blindAlerter := &utilstesting.SpyBlindAlerter{}
 		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
-		poll := poll.NewPoll(&gameStore, blindAlerter)
+		poll := poll.NewMegaLike(&gameStore, blindAlerter)
 
 		c := cli.NewCLI(in, stdout, poll)
 

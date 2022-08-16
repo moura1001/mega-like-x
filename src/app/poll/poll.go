@@ -6,20 +6,25 @@ import (
 	"time"
 )
 
-type Poll struct {
+type Poll interface {
+	Start(numberOfVotingOptions int)
+	Finish(winner string)
+}
+
+type MegaLike struct {
 	store   store.GameStore
 	alerter alerter.BlindAlerter
 }
 
-func NewPoll(store store.GameStore, alerter alerter.BlindAlerter) *Poll {
+func NewMegaLike(store store.GameStore, alerter alerter.BlindAlerter) *MegaLike {
 
-	return &Poll{
+	return &MegaLike{
 		store:   store,
 		alerter: alerter,
 	}
 }
 
-func (p *Poll) Start(numberOfVotingOptions int) {
+func (p *MegaLike) Start(numberOfVotingOptions int) {
 	blindIncrement := time.Duration(5+numberOfVotingOptions) * time.Minute
 
 	blinds := []int{100, 200, 400, 800, 1600}
@@ -30,6 +35,6 @@ func (p *Poll) Start(numberOfVotingOptions int) {
 	}
 }
 
-func (p *Poll) Finish(winner string) {
+func (p *MegaLike) Finish(winner string) {
 	p.store.RecordLike(winner)
 }

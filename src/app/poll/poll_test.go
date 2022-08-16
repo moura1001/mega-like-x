@@ -12,7 +12,7 @@ func TestPollStart(t *testing.T) {
 	t.Run("schedules alerts on poll start for 5 players", func(t *testing.T) {
 		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
 		blindAlerter := &utilstesting.SpyBlindAlerter{}
-		poll := poll.NewPoll(&gameStore, blindAlerter)
+		poll := poll.NewMegaLike(&gameStore, blindAlerter)
 
 		poll.Start(5)
 
@@ -30,7 +30,7 @@ func TestPollStart(t *testing.T) {
 	t.Run("schedules alerts on poll start for 6 players", func(t *testing.T) {
 		blindAlerter := &utilstesting.SpyBlindAlerter{}
 		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
-		poll := poll.NewPoll(&gameStore, blindAlerter)
+		poll := poll.NewMegaLike(&gameStore, blindAlerter)
 
 		poll.Start(6)
 
@@ -51,7 +51,7 @@ func TestPollFinish(t *testing.T) {
 
 	gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
 	blindAlerter := &utilstesting.SpyBlindAlerter{}
-	poll := poll.NewPoll(&gameStore, blindAlerter)
+	poll := poll.NewMegaLike(&gameStore, blindAlerter)
 
 	poll.Finish(winner)
 	utilstesting.AssertGameLike(t, &gameStore, winner)

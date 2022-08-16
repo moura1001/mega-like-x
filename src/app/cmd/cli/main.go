@@ -14,7 +14,7 @@ func main() {
 	fmt.Println("Type '{Game} wins' to record a win")
 
 	store := store.NewInMemoryGameStore()
-	poll := poll.NewPoll(
+	poll := poll.NewMegaLike(
 		store,
 		alerter.BlindAlerterFunc(alerter.StdOutAlerter),
 	)
