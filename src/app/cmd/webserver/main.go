@@ -8,11 +8,8 @@ import (
 )
 
 func main() {
-	server, err := webserver.NewGameServer(store.IN_MEMORY, nil)
-
-	if err != nil {
-		log.Fatalf("server initialization error: %v", err)
-	}
+	store := store.NewInMemoryGameStore()
+	server := webserver.NewGameServer(store)
 
 	if err := http.ListenAndServe(":4000", server); err != nil {
 		log.Fatalf("could not listen on port 4000: %v", err)

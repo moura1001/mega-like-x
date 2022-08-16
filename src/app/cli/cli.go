@@ -5,36 +5,29 @@ import (
 	"fmt"
 	"io"
 	"moura1001/mega_like_x/src/app/alerter"
+	"moura1001/mega_like_x/src/app/poll"
 	"moura1001/mega_like_x/src/app/store"
 	apputils "moura1001/mega_like_x/src/app/utils/app"
-	"os"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type CLI struct {
-	store   store.GameStore
-	in      *bufio.Scanner
-	out     io.Writer
-	alerter alerter.BlindAlerter
+	in   *bufio.Scanner
+	out  io.Writer
+	poll *poll.Poll
 }
 
-func NewCLI(storeType store.StoreType,
+func NewCLI(store store.GameStore,
 	userIn io.Reader, sysOut io.Writer,
-	fileDB *os.File, alerter alerter.BlindAlerter,
-) (*CLI, error) {
+	alerter alerter.BlindAlerter,
+) *CLI {
 
-	var err error = nil
-
-	cli := new(CLI)
-
-	cli.in = bufio.NewScanner(userIn)
-	cli.out = sysOut
-	cli.store, err = store.GetNewGameStore(storeType, fileDB)
-	cli.alerter = alerter
-
-	return cli, err
+	return &CLI{
+		in:   bufio.NewScanner(userIn),
+		out:  sysOut,
+		poll: poll.NewPoll(store, alerter),
+	}
 }
 
 func (cli *CLI) StartPoll() {
@@ -42,24 +35,13 @@ func (cli *CLI) StartPoll() {
 
 	numberOfVotingOptionsInput, _ := strconv.Atoi(cli.readLine())
 
-	cli.scheduleBlindAlerts(numberOfVotingOptionsInput)
+	cli.poll.Start(numberOfVotingOptionsInput)
 
 	userInput := cli.readLine()
-	cli.store.RecordLike(extractVote(userInput))
+	cli.poll.Finish(extractWinner(userInput))
 }
 
-func (cli *CLI) scheduleBlindAlerts(numberOfVotingOptionsInput int) {
-	blindIncrement := time.Duration(5+numberOfVotingOptionsInput) * time.Minute
-
-	blinds := []int{100, 200, 400, 800, 1600}
-	blindTime := 0 * time.Second
-	for _, blind := range blinds {
-		cli.alerter.ScheduleAlertAt(blindTime, blind)
-		blindTime += blindIncrement
-	}
-}
-
-func extractVote(userInput string) string {
+func extractWinner(userInput string) string {
 	return strings.Replace(userInput, " wins", "", 1)
 }
 

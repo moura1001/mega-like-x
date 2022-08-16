@@ -1,15 +1,16 @@
-package webserver
+package webserver_test
 
 import (
 	"moura1001/mega_like_x/src/app/model"
 	utilstesting "moura1001/mega_like_x/src/app/utils/test/shared"
+	"moura1001/mega_like_x/src/app/webserver"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
 func TestGETLikes(t *testing.T) {
-	st := utilstesting.GetNewStubGameStore(
+	store := utilstesting.GetNewStubGameStore(
 		map[string]int{
 			"x1": 32,
 			"x2": 64,
@@ -17,8 +18,7 @@ func TestGETLikes(t *testing.T) {
 		nil,
 		nil,
 	)
-	server, _ := NewGameServer("", nil)
-	server.store = &st
+	server := webserver.NewGameServer(&store)
 
 	t.Run("returns Mega Man X's likes", func(t *testing.T) {
 		request := utilstesting.NewGetLikesRequest("x1")
@@ -51,13 +51,12 @@ func TestGETLikes(t *testing.T) {
 }
 
 func TestStoreLikes(t *testing.T) {
-	st := utilstesting.GetNewStubGameStore(
+	store := utilstesting.GetNewStubGameStore(
 		map[string]int{},
 		nil,
 		nil,
 	)
-	server, _ := NewGameServer("", nil)
-	server.store = &st
+	server := webserver.NewGameServer(&store)
 
 	t.Run("it records likes when POST", func(t *testing.T) {
 		game := "x6"
@@ -69,7 +68,7 @@ func TestStoreLikes(t *testing.T) {
 
 		utilstesting.AssertStatus(t, response.Code, http.StatusAccepted)
 
-		utilstesting.AssertGameLike(t, &st, "x6")
+		utilstesting.AssertGameLike(t, &store, "x6")
 
 	})
 }
@@ -81,9 +80,8 @@ func TestPolling(t *testing.T) {
 		{Name: "x6", Likes: 23},
 	}
 
-	st := utilstesting.GetNewStubGameStore(nil, nil, wantedGames)
-	server, _ := NewGameServer("", nil)
-	server.store = &st
+	store := utilstesting.GetNewStubGameStore(nil, nil, wantedGames)
+	server := webserver.NewGameServer(&store)
 
 	t.Run("it returns the game table as JSON", func(t *testing.T) {
 

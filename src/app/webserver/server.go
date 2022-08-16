@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"moura1001/mega_like_x/src/app/store"
 	"net/http"
-	"os"
 
 	"github.com/gorilla/mux"
 )
@@ -15,13 +14,11 @@ type GameServer struct {
 	http.Handler
 }
 
-func NewGameServer(storeType store.StoreType, fileDB *os.File) (*GameServer, error) {
-
-	var err error = nil
+func NewGameServer(store store.GameStore) *GameServer {
 
 	server := new(GameServer)
 
-	server.store, err = store.GetNewGameStore(storeType, fileDB)
+	server.store = store
 
 	router := mux.NewRouter()
 	router.HandleFunc("/games", server.gamesHandler)
@@ -29,7 +26,7 @@ func NewGameServer(storeType store.StoreType, fileDB *os.File) (*GameServer, err
 
 	server.Handler = router
 
-	return server, err
+	return server
 }
 
 func (g *GameServer) gamesHandler(w http.ResponseWriter, r *http.Request) {

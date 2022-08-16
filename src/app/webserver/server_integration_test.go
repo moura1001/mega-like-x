@@ -1,4 +1,4 @@
-package webserver
+package webserver_test
 
 import (
 	"moura1001/mega_like_x/src/app/model"
@@ -6,14 +6,15 @@ import (
 	utilstestingfilestore "moura1001/mega_like_x/src/app/utils/test/file_store"
 	utilstestingpgstore "moura1001/mega_like_x/src/app/utils/test/pg_store"
 	utilstesting "moura1001/mega_like_x/src/app/utils/test/shared"
+	"moura1001/mega_like_x/src/app/webserver"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
 func TestRecordingLikesAndRetrievingThemMemory(t *testing.T) {
-	server, err := NewGameServer(store.IN_MEMORY, nil)
-	utilstesting.AssertNoError(t, err)
+	store := store.NewInMemoryGameStore()
+	server := webserver.NewGameServer(store)
 
 	game := "x4"
 	newGame := "x6"
@@ -62,15 +63,12 @@ func TestRecordingLikesAndRetrievingThemMemory(t *testing.T) {
 }
 
 func TestRecordingLikesAndRetrievingThemFromPostgres(t *testing.T) {
-	server, err := NewGameServer(store.POSTGRES, nil)
-	utilstesting.AssertNoError(t, err)
-
-	server.store = utilstestingpgstore.SetupPostgresStoreTests(t)
+	store := utilstestingpgstore.SetupPostgresStoreTests(t)
+	server := webserver.NewGameServer(store)
 
 	game := "x8"
-	// cast to Postgres store
-	st := server.store.(*store.PostgresGameStore)
-	st.DB.Exec(`
+
+	store.DB.Exec(`
 		INSERT INTO	games(name)
 		VALUES	($1)
 	`, game)
@@ -105,8 +103,10 @@ func TestRecordingLikesAndRetrievingThemFromFile(t *testing.T) {
 	]`)
 	defer cleanDatabase()
 
-	server, err := NewGameServer(store.FILE_SYSTEM, database)
+	st, err := store.NewFileSystemGameStore(database)
 	utilstesting.AssertNoError(t, err)
+
+	server := webserver.NewGameServer(st)
 
 	game := "x1"
 	newGame := "x2"

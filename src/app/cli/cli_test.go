@@ -1,8 +1,9 @@
-package cli
+package cli_test
 
 import (
 	"bytes"
 	"fmt"
+	"moura1001/mega_like_x/src/app/cli"
 	apputils "moura1001/mega_like_x/src/app/utils/app"
 	utilstesting "moura1001/mega_like_x/src/app/utils/test/shared"
 	"strings"
@@ -28,7 +29,6 @@ func (s *SpyBlindAlerter) ScheduleAlertAt(duration time.Duration, amount int) {
 }
 
 var dummySpyAlerter = &SpyBlindAlerter{}
-var dummyStdIn = &bytes.Buffer{}
 var dummyStdOut = &bytes.Buffer{}
 
 func TestCLI(t *testing.T) {
@@ -36,8 +36,7 @@ func TestCLI(t *testing.T) {
 	t.Run("record x1 win from user input", func(t *testing.T) {
 		in := strings.NewReader("5\nx1 wins\n")
 		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
-		cli, _ := NewCLI("", in, dummyStdOut, nil, dummySpyAlerter)
-		cli.store = &gameStore
+		cli := cli.NewCLI(&gameStore, in, dummyStdOut, dummySpyAlerter)
 
 		cli.StartPoll()
 
@@ -47,8 +46,7 @@ func TestCLI(t *testing.T) {
 	t.Run("record x6 win from user input", func(t *testing.T) {
 		in := strings.NewReader("5\nx6 wins\n")
 		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
-		cli, _ := NewCLI("", in, dummyStdOut, nil, dummySpyAlerter)
-		cli.store = &gameStore
+		cli := cli.NewCLI(&gameStore, in, dummyStdOut, dummySpyAlerter)
 
 		cli.StartPoll()
 
@@ -60,8 +58,7 @@ func TestCLI(t *testing.T) {
 		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
 		blindAlerter := &SpyBlindAlerter{}
 
-		cli, _ := NewCLI("", in, dummyStdOut, nil, blindAlerter)
-		cli.store = &gameStore
+		cli := cli.NewCLI(&gameStore, in, dummyStdOut, blindAlerter)
 
 		cli.StartPoll()
 
@@ -92,8 +89,7 @@ func TestCLI(t *testing.T) {
 		blindAlerter := &SpyBlindAlerter{}
 
 		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
-		c, _ := NewCLI("", in, stdout, nil, blindAlerter)
-		c.store = &gameStore
+		c := cli.NewCLI(&gameStore, in, stdout, blindAlerter)
 
 		c.StartPoll()
 
