@@ -6,6 +6,7 @@ import (
 	"io"
 	"moura1001/mega_like_x/src/app/poll"
 	apputils "moura1001/mega_like_x/src/app/utils/app"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -37,11 +38,25 @@ func (cli *CLI) StartPoll() {
 	cli.poll.Start(numberOfVotingOptionsInput)
 
 	userInput := cli.readLine()
-	cli.poll.Finish(extractWinner(userInput))
+	winner := extractWinner(userInput)
+	if winner == "" {
+		fmt.Fprintf(cli.out, apputils.BadWinnerInputErrMsg)
+		return
+	}
+
+	cli.poll.Finish(winner)
 }
 
 func extractWinner(userInput string) string {
-	return strings.Replace(userInput, " wins", "", 1)
+	suffix := " wins"
+	rgx := fmt.Sprintf(`.+%s$`, suffix)
+
+	matched, _ := regexp.MatchString(rgx, userInput)
+	if matched {
+		return strings.TrimSuffix(userInput, suffix)
+	}
+
+	return ""
 }
 
 func (cli *CLI) readLine() string {

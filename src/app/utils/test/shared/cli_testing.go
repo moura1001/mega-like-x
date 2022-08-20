@@ -4,6 +4,7 @@ type PollSpy struct {
 	StartedWith  int
 	FinishedWith string
 	StartCalled  bool
+	FinishCalled bool
 }
 
 func (p *PollSpy) Start(numberOfVotingOptions int) {
@@ -13,4 +14,5 @@ func (p *PollSpy) Start(numberOfVotingOptions int) {
 
 func (p *PollSpy) Finish(winner string) {
 	p.FinishedWith = winner
+	p.FinishCalled = true
 }

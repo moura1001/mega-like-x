@@ -56,6 +56,38 @@ func TestCLI(t *testing.T) {
 
 	})
 
+	t.Run("start poll with 8 game options and prints an error when invalid winner input is entered and does not finish the poll", func(t *testing.T) {
+		stdout := &bytes.Buffer{}
+		poll := &utilstesting.PollSpy{}
+
+		in := userSends("8", "x6 is better than x4")
+
+		c := cli.NewCLI(in, stdout, poll)
+
+		c.StartPoll()
+
+		if poll.FinishCalled {
+			t.Errorf("poll should not have finished")
+		}
+
+		assertMessageSentToUser(t, stdout, apputils.UserPrompt, apputils.BadWinnerInputErrMsg)
+	})
+
+	t.Run("start poll with 3 game options and finish with hypothetical game title 'Wins to wins' as winner", func(t *testing.T) {
+		stdout := &bytes.Buffer{}
+		poll := &utilstesting.PollSpy{}
+
+		in := userSends("3", "Wins to wins wins")
+
+		c := cli.NewCLI(in, stdout, poll)
+
+		c.StartPoll()
+
+		assertMessageSentToUser(t, stdout, apputils.UserPrompt)
+		assertGameStartedWith(t, poll, 3)
+		assertGameFinishCalledWith(t, poll, "Wins to wins")
+	})
+
 }
 
 func userSends(inputs ...string) *strings.Reader {
