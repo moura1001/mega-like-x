@@ -98,3 +98,18 @@ func TestPolling(t *testing.T) {
 		utilstesting.AssertPolling(t, got, wantedGames)
 	})
 }
+
+func TestPoll(t *testing.T) {
+	store := utilstesting.GetNewStubGameStore(nil, nil, model.Polling{})
+	server := webserver.NewGameServer(&store)
+
+	t.Run("GET /poll returns 200", func(t *testing.T) {
+
+		request := utilstesting.NewPollRequest()
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		utilstesting.AssertStatus(t, response.Code, http.StatusOK)
+	})
+}

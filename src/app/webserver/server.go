@@ -23,6 +23,7 @@ func NewGameServer(store store.GameStore) *GameServer {
 	router := mux.NewRouter()
 	router.HandleFunc("/games", server.gamesHandler)
 	router.HandleFunc("/likes/{game}", server.likesHandler)
+	router.HandleFunc("/poll", server.pollHandler)
 
 	server.Handler = router
 
@@ -60,4 +61,8 @@ func (g *GameServer) showLikes(w http.ResponseWriter, game string) {
 func (g *GameServer) processLike(w http.ResponseWriter, game string) {
 	g.store.RecordLike(game)
 	w.WriteHeader(http.StatusAccepted)
+}
+
+func (g *GameServer) pollHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }

@@ -114,3 +114,8 @@ func AssertContentType(t *testing.T, response *httptest.ResponseRecorder, want s
 		t.Errorf("response did not have content-type of %s, got %v", want, response.Result().Body)
 	}
 }
+
+func NewPollRequest() *http.Request {
+	req := httptest.NewRequest(http.MethodGet, "/poll", nil)
+	return req
+}
