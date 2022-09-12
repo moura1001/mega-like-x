@@ -3,6 +3,7 @@ package webserver
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"moura1001/mega_like_x/src/app/store"
 	"net/http"
 
@@ -12,9 +13,10 @@ import (
 type GameServer struct {
 	store store.GameStore
 	http.Handler
+	htmlTemplatePath string
 }
 
-func NewGameServer(store store.GameStore) *GameServer {
+func NewGameServer(store store.GameStore, htmlTemplatePath string) *GameServer {
 
 	server := new(GameServer)
 
@@ -26,6 +28,8 @@ func NewGameServer(store store.GameStore) *GameServer {
 	router.HandleFunc("/poll", server.pollHandler)
 
 	server.Handler = router
+
+	server.htmlTemplatePath = htmlTemplatePath
 
 	return server
 }
@@ -64,5 +68,11 @@ func (g *GameServer) processLike(w http.ResponseWriter, game string) {
 }
 
 func (g *GameServer) pollHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
+	tmpl, err := template.ParseFiles(g.htmlTemplatePath)
+
+	if err != nil {
+		http.Error(w, fmt.Sprintf("problem loading template: '%s'", err.Error()), http.StatusInternalServerError)
+	}
+
+	tmpl.Execute(w, nil)
 }

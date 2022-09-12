@@ -9,7 +9,7 @@ import (
 
 func main() {
 	store := store.NewInMemoryGameStore()
-	server := webserver.NewGameServer(store)
+	server := webserver.NewGameServer(store, "../../../templates/poll.html")
 
 	if err := http.ListenAndServe(":4000", server); err != nil {
 		log.Fatalf("could not listen on port 4000: %v", err)
