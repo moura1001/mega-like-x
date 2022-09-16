@@ -14,13 +14,24 @@ import (
 type GameServer struct {
 	store store.GameStore
 	http.Handler
-	htmlTemplatePath string
+	htmlTemplate *template.Template
 }
 
-func NewGameServer(store store.GameStore, htmlTemplatePath string) *GameServer {
+var wsUpgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
+func NewGameServer(store store.GameStore, htmlTemplatePath string) (*GameServer, error) {
 
 	server := new(GameServer)
 
+	tmpl, err := template.ParseFiles(htmlTemplatePath)
+	if htmlTemplatePath != "" && err != nil {
+		return nil, fmt.Errorf("problem opening template '%s': '%v'", htmlTemplatePath, err)
+	}
+
+	server.htmlTemplate = tmpl
 	server.store = store
 
 	router := mux.NewRouter()
@@ -31,9 +42,7 @@ func NewGameServer(store store.GameStore, htmlTemplatePath string) *GameServer {
 
 	server.Handler = router
 
-	server.htmlTemplatePath = htmlTemplatePath
-
-	return server
+	return server, nil
 }
 
 func (g *GameServer) gamesHandler(w http.ResponseWriter, r *http.Request) {
@@ -70,22 +79,13 @@ func (g *GameServer) processLike(w http.ResponseWriter, game string) {
 }
 
 func (g *GameServer) pollHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles(g.htmlTemplatePath)
 
-	if err != nil {
-		http.Error(w, fmt.Sprintf("problem loading template: '%s'", err.Error()), http.StatusInternalServerError)
-	}
-
-	tmpl.Execute(w, nil)
+	g.htmlTemplate.Execute(w, nil)
 }
 
 func (g *GameServer) webSocket(w http.ResponseWriter, r *http.Request) {
-	upgrader := websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
-	}
 
-	conn, _ := upgrader.Upgrade(w, r, nil)
+	conn, _ := wsUpgrader.Upgrade(w, r, nil)
 	_, winnerMsg, _ := conn.ReadMessage()
 
 	g.store.RecordLike(string(winnerMsg))

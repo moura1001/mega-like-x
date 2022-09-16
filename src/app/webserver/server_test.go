@@ -3,14 +3,13 @@ package webserver_test
 import (
 	"moura1001/mega_like_x/src/app/model"
 	utilstesting "moura1001/mega_like_x/src/app/utils/test/shared"
+	utilstestingwebserver "moura1001/mega_like_x/src/app/utils/test/webserver"
 	"moura1001/mega_like_x/src/app/webserver"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/gorilla/websocket"
 )
 
 func TestGETLikes(t *testing.T) {
@@ -22,7 +21,7 @@ func TestGETLikes(t *testing.T) {
 		nil,
 		nil,
 	)
-	server := webserver.NewGameServer(&store, "")
+	server, _ := webserver.NewGameServer(&store, "")
 
 	t.Run("returns Mega Man X's likes", func(t *testing.T) {
 		request := utilstesting.NewGetLikesRequest("x1")
@@ -60,7 +59,7 @@ func TestStoreLikes(t *testing.T) {
 		nil,
 		nil,
 	)
-	server := webserver.NewGameServer(&store, "")
+	server, _ := webserver.NewGameServer(&store, "")
 
 	t.Run("it records likes when POST", func(t *testing.T) {
 		game := "x6"
@@ -85,7 +84,7 @@ func TestPolling(t *testing.T) {
 	}
 
 	store := utilstesting.GetNewStubGameStore(nil, nil, wantedGames)
-	server := webserver.NewGameServer(&store, "")
+	server, _ := webserver.NewGameServer(&store, "")
 
 	t.Run("it returns the game table as JSON", func(t *testing.T) {
 
@@ -108,7 +107,9 @@ func TestPoll(t *testing.T) {
 	t.Run("GET /poll returns 200", func(t *testing.T) {
 
 		store := utilstesting.GetNewStubGameStore(nil, nil, model.Polling{})
-		server := webserver.NewGameServer(&store, "../../templates/poll.html")
+		server, err := webserver.NewGameServer(&store, "../../templates/poll.html")
+
+		utilstesting.AssertNoError(t, err)
 
 		request := utilstesting.NewPollRequest()
 		response := httptest.NewRecorder()
@@ -121,22 +122,21 @@ func TestPoll(t *testing.T) {
 	t.Run("when we get a message over a websocket it is a winner of a poll", func(t *testing.T) {
 
 		store := utilstesting.GetNewStubGameStore(nil, []string{}, model.Polling{})
-		server := httptest.NewServer(webserver.NewGameServer(&store, "../../templates/poll.html"))
+		svr, err := webserver.NewGameServer(&store, "../../templates/poll.html")
+
+		utilstesting.AssertNoError(t, err)
+
+		server := httptest.NewServer(svr)
 		defer server.Close()
 
 		winner := "x7"
 
 		wsURL := "ws" + strings.TrimPrefix(server.URL, "http") + "/ws"
 
-		ws, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
-		if err != nil {
-			t.Fatalf("could not open a ws connection on '%s': '%v'", wsURL, err)
-		}
+		ws := utilstestingwebserver.MustDialWS(t, wsURL)
 		defer ws.Close()
 
-		if err := ws.WriteMessage(websocket.TextMessage, []byte(winner)); err != nil {
-			t.Fatalf("could not send message over ws connection: '%v'", err)
-		}
+		utilstestingwebserver.WriteWSMessage(t, ws, winner)
 
 		// TODO: bad practice
 		// timeout for the websocket connection to read the message and the server record the winner
