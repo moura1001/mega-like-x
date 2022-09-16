@@ -58,7 +58,7 @@ func AssertGameLike(t *testing.T, store *StubGameStore, game string) {
 	t.Helper()
 
 	if len(store.likeCalls) != 1 {
-		t.Errorf("got %d calls to RecordLike, want %d", len(store.likeCalls), 1)
+		t.Fatalf("got %d calls to RecordLike, want %d", len(store.likeCalls), 1)
 	}
 
 	if store.likeCalls[0] != game {

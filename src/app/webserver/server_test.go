@@ -6,7 +6,11 @@ import (
 	"moura1001/mega_like_x/src/app/webserver"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 func TestGETLikes(t *testing.T) {
@@ -100,10 +104,11 @@ func TestPolling(t *testing.T) {
 }
 
 func TestPoll(t *testing.T) {
-	store := utilstesting.GetNewStubGameStore(nil, nil, model.Polling{})
-	server := webserver.NewGameServer(&store, "../../templates/poll.html")
 
 	t.Run("GET /poll returns 200", func(t *testing.T) {
+
+		store := utilstesting.GetNewStubGameStore(nil, nil, model.Polling{})
+		server := webserver.NewGameServer(&store, "../../templates/poll.html")
 
 		request := utilstesting.NewPollRequest()
 		response := httptest.NewRecorder()
@@ -111,5 +116,31 @@ func TestPoll(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		utilstesting.AssertStatus(t, response.Code, http.StatusOK)
+	})
+
+	t.Run("when we get a message over a websocket it is a winner of a poll", func(t *testing.T) {
+
+		store := utilstesting.GetNewStubGameStore(nil, []string{}, model.Polling{})
+		server := httptest.NewServer(webserver.NewGameServer(&store, "../../templates/poll.html"))
+		defer server.Close()
+
+		winner := "x7"
+
+		wsURL := "ws" + strings.TrimPrefix(server.URL, "http") + "/ws"
+
+		ws, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+		if err != nil {
+			t.Fatalf("could not open a ws connection on '%s': '%v'", wsURL, err)
+		}
+		defer ws.Close()
+
+		if err := ws.WriteMessage(websocket.TextMessage, []byte(winner)); err != nil {
+			t.Fatalf("could not send message over ws connection: '%v'", err)
+		}
+
+		// TODO: bad practice
+		// timeout for the websocket connection to read the message and the server record the winner
+		time.Sleep(10 * time.Millisecond)
+		utilstesting.AssertGameLike(t, &store, winner)
 	})
 }

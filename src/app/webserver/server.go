@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 )
 
 type GameServer struct {
@@ -26,6 +27,7 @@ func NewGameServer(store store.GameStore, htmlTemplatePath string) *GameServer {
 	router.HandleFunc("/games", server.gamesHandler)
 	router.HandleFunc("/likes/{game}", server.likesHandler)
 	router.HandleFunc("/poll", server.pollHandler)
+	router.Handle("/ws", http.HandlerFunc(server.webSocket))
 
 	server.Handler = router
 
@@ -75,4 +77,16 @@ func (g *GameServer) pollHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tmpl.Execute(w, nil)
+}
+
+func (g *GameServer) webSocket(w http.ResponseWriter, r *http.Request) {
+	upgrader := websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
+
+	conn, _ := upgrader.Upgrade(w, r, nil)
+	_, winnerMsg, _ := conn.ReadMessage()
+
+	g.store.RecordLike(string(winnerMsg))
 }
