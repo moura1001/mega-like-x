@@ -1,6 +1,7 @@
 package poll_test
 
 import (
+	"io"
 	"moura1001/mega_like_x/src/app/poll"
 	utilstesting "moura1001/mega_like_x/src/app/utils/test/shared"
 	"testing"
@@ -14,7 +15,7 @@ func TestPollStart(t *testing.T) {
 		blindAlerter := &utilstesting.SpyBlindAlerter{}
 		poll := poll.NewMegaLike(&gameStore, blindAlerter)
 
-		poll.Start(5)
+		poll.Start(5, io.Discard)
 
 		cases := []utilstesting.ScheduledAlert{
 			{At: 0 * time.Second, Amount: 100},
@@ -32,7 +33,7 @@ func TestPollStart(t *testing.T) {
 		gameStore := utilstesting.GetNewStubGameStore(nil, nil, nil)
 		poll := poll.NewMegaLike(&gameStore, blindAlerter)
 
-		poll.Start(6)
+		poll.Start(6, io.Discard)
 
 		cases := []utilstesting.ScheduledAlert{
 			{At: 0 * time.Second, Amount: 100},

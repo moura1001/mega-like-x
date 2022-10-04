@@ -16,10 +16,10 @@ func main() {
 	store := store.NewInMemoryGameStore()
 	poll := poll.NewMegaLike(
 		store,
-		alerter.BlindAlerterFunc(alerter.StdOutAlerter),
+		alerter.BlindAlerterFunc(alerter.Alerter),
 	)
 
-	cli := cli.NewCLI(os.Stdin, nil, poll)
+	cli := cli.NewCLI(os.Stdin, os.Stdout, poll)
 
 	cli.StartPoll()
 }

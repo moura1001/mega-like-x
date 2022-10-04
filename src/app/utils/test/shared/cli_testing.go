@@ -1,5 +1,7 @@
 package utilstesting
 
+import "io"
+
 type PollSpy struct {
 	StartedWith  int
 	FinishedWith string
@@ -7,7 +9,7 @@ type PollSpy struct {
 	FinishCalled bool
 }
 
-func (p *PollSpy) Start(numberOfVotingOptions int) {
+func (p *PollSpy) Start(numberOfVotingOptions int, to io.Writer) {
 	p.StartedWith = numberOfVotingOptions
 	p.StartCalled = true
 }

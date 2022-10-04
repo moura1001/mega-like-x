@@ -35,7 +35,7 @@ func (cli *CLI) StartPoll() {
 		return
 	}
 
-	cli.poll.Start(numberOfVotingOptionsInput)
+	cli.poll.Start(numberOfVotingOptionsInput, cli.out)
 
 	userInput := cli.readLine()
 	winner := extractWinner(userInput)

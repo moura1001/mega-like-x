@@ -1,13 +1,14 @@
 package poll
 
 import (
+	"io"
 	"moura1001/mega_like_x/src/app/alerter"
 	"moura1001/mega_like_x/src/app/store"
 	"time"
 )
 
 type Poll interface {
-	Start(numberOfVotingOptions int)
+	Start(numberOfVotingOptions int, alertsDestination io.Writer)
 	Finish(winner string)
 }
 
@@ -24,13 +25,13 @@ func NewMegaLike(store store.GameStore, alerter alerter.BlindAlerter) *MegaLike 
 	}
 }
 
-func (p *MegaLike) Start(numberOfVotingOptions int) {
+func (p *MegaLike) Start(numberOfVotingOptions int, to io.Writer) {
 	blindIncrement := time.Duration(5+numberOfVotingOptions) * time.Minute
 
 	blinds := []int{100, 200, 400, 800, 1600}
 	blindTime := 0 * time.Second
 	for _, blind := range blinds {
-		p.alerter.ScheduleAlertAt(blindTime, blind)
+		p.alerter.ScheduleAlertAt(blindTime, blind, to)
 		blindTime += blindIncrement
 	}
 }
