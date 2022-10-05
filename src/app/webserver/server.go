@@ -90,14 +90,14 @@ func (g *GameServer) pollHandler(w http.ResponseWriter, r *http.Request) {
 
 func (g *GameServer) webSocket(w http.ResponseWriter, r *http.Request) {
 
-	conn, _ := wsUpgrader.Upgrade(w, r, nil)
+	ws := newPollServerWS(w, r)
 
-	_, numberOfVotingOptionsMsg, _ := conn.ReadMessage()
+	numberOfVotingOptionsMsg := ws.WaitForMessage()
 	numberOfVotingOptions, _ := strconv.Atoi(string(numberOfVotingOptionsMsg))
 	// TODO: don't discard the blinds messages
 	g.poll.Start(numberOfVotingOptions, io.Discard)
 
-	_, winnerMsg, _ := conn.ReadMessage()
+	winnerMsg := ws.WaitForMessage()
 
 	g.poll.Finish(string(winnerMsg))
 }
