@@ -12,6 +12,10 @@ import (
 	"time"
 )
 
+var (
+	dummyPoll = &utilstesting.PollSpy{}
+)
+
 func TestGETLikes(t *testing.T) {
 	store := utilstesting.GetNewStubGameStore(
 		map[string]int{
@@ -21,7 +25,7 @@ func TestGETLikes(t *testing.T) {
 		nil,
 		nil,
 	)
-	server, _ := webserver.NewGameServer(&store, "")
+	server, _ := webserver.NewGameServer(&store, "", dummyPoll)
 
 	t.Run("returns Mega Man X's likes", func(t *testing.T) {
 		request := utilstesting.NewGetLikesRequest("x1")
@@ -59,7 +63,7 @@ func TestStoreLikes(t *testing.T) {
 		nil,
 		nil,
 	)
-	server, _ := webserver.NewGameServer(&store, "")
+	server, _ := webserver.NewGameServer(&store, "", dummyPoll)
 
 	t.Run("it records likes when POST", func(t *testing.T) {
 		game := "x6"
@@ -84,7 +88,7 @@ func TestPolling(t *testing.T) {
 	}
 
 	store := utilstesting.GetNewStubGameStore(nil, nil, wantedGames)
-	server, _ := webserver.NewGameServer(&store, "")
+	server, _ := webserver.NewGameServer(&store, "", dummyPoll)
 
 	t.Run("it returns the game table as JSON", func(t *testing.T) {
 
@@ -107,7 +111,7 @@ func TestPoll(t *testing.T) {
 	t.Run("GET /poll returns 200", func(t *testing.T) {
 
 		store := utilstesting.GetNewStubGameStore(nil, nil, model.Polling{})
-		server, err := webserver.NewGameServer(&store, "../../templates/poll.html")
+		server, err := webserver.NewGameServer(&store, "../../templates/poll.html", dummyPoll)
 
 		utilstesting.AssertNoError(t, err)
 
@@ -119,28 +123,31 @@ func TestPoll(t *testing.T) {
 		utilstesting.AssertStatus(t, response.Code, http.StatusOK)
 	})
 
-	t.Run("when we get a message over a websocket it is a winner of a poll", func(t *testing.T) {
+	t.Run("start poll with 8 game options and finish with 'x7' as winner", func(t *testing.T) {
+		poll := &utilstesting.PollSpy{}
+		winner := "x7"
 
 		store := utilstesting.GetNewStubGameStore(nil, []string{}, model.Polling{})
-		svr, err := webserver.NewGameServer(&store, "../../templates/poll.html")
+		svr, err := webserver.NewGameServer(&store, "../../templates/poll.html", poll)
 
 		utilstesting.AssertNoError(t, err)
 
 		server := httptest.NewServer(svr)
 		defer server.Close()
 
-		winner := "x7"
-
 		wsURL := "ws" + strings.TrimPrefix(server.URL, "http") + "/ws"
 
 		ws := utilstestingwebserver.MustDialWS(t, wsURL)
 		defer ws.Close()
 
+		utilstestingwebserver.WriteWSMessage(t, ws, "8")
 		utilstestingwebserver.WriteWSMessage(t, ws, winner)
 
 		// TODO: bad practice
 		// timeout for the websocket connection to read the message and the server record the winner
 		time.Sleep(10 * time.Millisecond)
-		utilstesting.AssertGameLike(t, &store, winner)
+
+		utilstesting.AssertGameStartedWith(t, poll, 8)
+		utilstesting.AssertGameFinishCalledWith(t, poll, winner)
 	})
 }

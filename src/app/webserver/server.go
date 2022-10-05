@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
+	"moura1001/mega_like_x/src/app/poll"
 	"moura1001/mega_like_x/src/app/store"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -15,6 +18,7 @@ type GameServer struct {
 	store store.GameStore
 	http.Handler
 	htmlTemplate *template.Template
+	poll         poll.Poll
 }
 
 var wsUpgrader = websocket.Upgrader{
@@ -22,7 +26,7 @@ var wsUpgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func NewGameServer(store store.GameStore, htmlTemplatePath string) (*GameServer, error) {
+func NewGameServer(store store.GameStore, htmlTemplatePath string, poll poll.Poll) (*GameServer, error) {
 
 	server := new(GameServer)
 
@@ -33,6 +37,7 @@ func NewGameServer(store store.GameStore, htmlTemplatePath string) (*GameServer,
 
 	server.htmlTemplate = tmpl
 	server.store = store
+	server.poll = poll
 
 	router := mux.NewRouter()
 	router.HandleFunc("/games", server.gamesHandler)
@@ -86,7 +91,13 @@ func (g *GameServer) pollHandler(w http.ResponseWriter, r *http.Request) {
 func (g *GameServer) webSocket(w http.ResponseWriter, r *http.Request) {
 
 	conn, _ := wsUpgrader.Upgrade(w, r, nil)
+
+	_, numberOfVotingOptionsMsg, _ := conn.ReadMessage()
+	numberOfVotingOptions, _ := strconv.Atoi(string(numberOfVotingOptionsMsg))
+	// TODO: don't discard the blinds messages
+	g.poll.Start(numberOfVotingOptions, io.Discard)
+
 	_, winnerMsg, _ := conn.ReadMessage()
 
-	g.store.RecordLike(string(winnerMsg))
+	g.poll.Finish(string(winnerMsg))
 }

@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"moura1001/mega_like_x/src/app/alerter"
+	"moura1001/mega_like_x/src/app/poll"
 	"moura1001/mega_like_x/src/app/store"
 	"moura1001/mega_like_x/src/app/webserver"
 	"net/http"
@@ -9,7 +11,12 @@ import (
 
 func main() {
 	store := store.NewInMemoryGameStore()
-	server, err := webserver.NewGameServer(store, "../../../templates/poll.html")
+	poll := poll.NewMegaLike(
+		store,
+		alerter.BlindAlerterFunc(alerter.Alerter),
+	)
+
+	server, err := webserver.NewGameServer(store, "../../../templates/poll.html", poll)
 	if err != nil {
 		log.Fatalf("server startup error: %v", err)
 	}

@@ -14,7 +14,7 @@ import (
 
 func TestRecordingLikesAndRetrievingThemMemory(t *testing.T) {
 	store := store.NewInMemoryGameStore()
-	server, _ := webserver.NewGameServer(store, "")
+	server, _ := webserver.NewGameServer(store, "", dummyPoll)
 
 	game := "x4"
 	newGame := "x6"
@@ -64,7 +64,7 @@ func TestRecordingLikesAndRetrievingThemMemory(t *testing.T) {
 
 func TestRecordingLikesAndRetrievingThemFromPostgres(t *testing.T) {
 	store := utilstestingpgstore.SetupPostgresStoreTests(t)
-	server, _ := webserver.NewGameServer(store, "")
+	server, _ := webserver.NewGameServer(store, "", dummyPoll)
 
 	game := "x8"
 
@@ -106,7 +106,7 @@ func TestRecordingLikesAndRetrievingThemFromFile(t *testing.T) {
 	st, err := store.NewFileSystemGameStore(database)
 	utilstesting.AssertNoError(t, err)
 
-	server, _ := webserver.NewGameServer(st, "")
+	server, _ := webserver.NewGameServer(st, "", dummyPoll)
 
 	game := "x1"
 	newGame := "x2"

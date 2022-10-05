@@ -22,8 +22,8 @@ func TestCLI(t *testing.T) {
 		c.StartPoll()
 
 		assertMessageSentToUser(t, stdout, apputils.UserPrompt)
-		assertGameStartedWith(t, poll, 4)
-		assertGameFinishCalledWith(t, poll, "x2")
+		utilstesting.AssertGameStartedWith(t, poll, 4)
+		utilstesting.AssertGameFinishCalledWith(t, poll, "x2")
 	})
 
 	t.Run("start poll with 6 game options and finish with 'x6' as winner", func(t *testing.T) {
@@ -37,8 +37,8 @@ func TestCLI(t *testing.T) {
 		c.StartPoll()
 
 		assertMessageSentToUser(t, stdout, apputils.UserPrompt)
-		assertGameStartedWith(t, poll, 6)
-		assertGameFinishCalledWith(t, poll, "x6")
+		utilstesting.AssertGameStartedWith(t, poll, 6)
+		utilstesting.AssertGameFinishCalledWith(t, poll, "x6")
 	})
 
 	t.Run("it prints an error when a non numeric value is entered and does not start the poll", func(t *testing.T) {
@@ -84,8 +84,8 @@ func TestCLI(t *testing.T) {
 		c.StartPoll()
 
 		assertMessageSentToUser(t, stdout, apputils.UserPrompt)
-		assertGameStartedWith(t, poll, 3)
-		assertGameFinishCalledWith(t, poll, "Wins to wins")
+		utilstesting.AssertGameStartedWith(t, poll, 3)
+		utilstesting.AssertGameFinishCalledWith(t, poll, "Wins to wins")
 	})
 
 }
@@ -105,22 +105,6 @@ func assertMessageSentToUser(t *testing.T, stdout *bytes.Buffer, messages ...str
 
 	if got != want {
 		t.Errorf("got '%s' sent to stdout but expected %+v", got, messages)
-	}
-}
-
-func assertGameStartedWith(t *testing.T, poll *utilstesting.PollSpy, want int) {
-	t.Helper()
-
-	if poll.StartedWith != want {
-		t.Errorf("wanted Start called with %d options but got %d", want, poll.StartedWith)
-	}
-}
-
-func assertGameFinishCalledWith(t *testing.T, poll *utilstesting.PollSpy, want string) {
-	t.Helper()
-
-	if poll.FinishedWith != want {
-		t.Errorf("wanted Finish winner '%s' but got '%s'", want, poll.FinishedWith)
 	}
 }
 
