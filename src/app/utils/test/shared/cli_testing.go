@@ -3,6 +3,7 @@ package utilstesting
 import (
 	"io"
 	"testing"
+	"time"
 )
 
 type PollSpy struct {
@@ -28,7 +29,11 @@ func (p *PollSpy) Finish(winner string) {
 func AssertGameStartedWith(t *testing.T, poll *PollSpy, want int) {
 	t.Helper()
 
-	if poll.StartedWith != want {
+	passed := retryUntil(500*time.Millisecond, func() bool {
+		return poll.StartedWith == want
+	})
+
+	if !passed {
 		t.Errorf("wanted Start called with %d options but got %d", want, poll.StartedWith)
 	}
 }
@@ -36,7 +41,21 @@ func AssertGameStartedWith(t *testing.T, poll *PollSpy, want int) {
 func AssertGameFinishCalledWith(t *testing.T, poll *PollSpy, want string) {
 	t.Helper()
 
-	if poll.FinishedWith != want {
+	passed := retryUntil(500*time.Millisecond, func() bool {
+		return poll.FinishedWith == want
+	})
+
+	if !passed {
 		t.Errorf("wanted Finish winner '%s' but got '%s'", want, poll.FinishedWith)
 	}
+}
+
+func retryUntil(d time.Duration, f func() bool) bool {
+	deadline := time.Now().Add(d)
+	for time.Now().Before(deadline) {
+		if f() {
+			return true
+		}
+	}
+	return false
 }

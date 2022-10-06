@@ -148,10 +148,6 @@ func TestPoll(t *testing.T) {
 		utilstestingwebserver.WriteWSMessage(t, ws, "8")
 		utilstestingwebserver.WriteWSMessage(t, ws, winner)
 
-		// TODO: bad practice
-		// timeout for the websocket connection to read the message and the server record the winner
-		time.Sleep(tenMS)
-
 		utilstesting.AssertGameStartedWith(t, poll, 8)
 		utilstesting.AssertGameFinishCalledWith(t, poll, winner)
 
