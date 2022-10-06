@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"io"
 	"moura1001/mega_like_x/src/app/poll"
 	"moura1001/mega_like_x/src/app/store"
 	"net/http"
@@ -95,7 +94,7 @@ func (g *GameServer) webSocket(w http.ResponseWriter, r *http.Request) {
 	numberOfVotingOptionsMsg := ws.WaitForMessage()
 	numberOfVotingOptions, _ := strconv.Atoi(string(numberOfVotingOptionsMsg))
 	// TODO: don't discard the blinds messages
-	g.poll.Start(numberOfVotingOptions, io.Discard)
+	g.poll.Start(numberOfVotingOptions, ws)
 
 	winnerMsg := ws.WaitForMessage()
 

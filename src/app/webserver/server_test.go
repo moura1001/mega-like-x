@@ -10,10 +10,13 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 var (
 	dummyPoll = &utilstesting.PollSpy{}
+	tenMS     = 10 * time.Millisecond
 )
 
 func TestGETLikes(t *testing.T) {
@@ -123,9 +126,11 @@ func TestPoll(t *testing.T) {
 		utilstesting.AssertStatus(t, response.Code, http.StatusOK)
 	})
 
-	t.Run("start poll with 8 game options and finish with 'x7' as winner", func(t *testing.T) {
-		poll := &utilstesting.PollSpy{}
+	t.Run("start poll with 8 game options, send some blind alerts downs WS and finish with 'x7' as winner", func(t *testing.T) {
+		wantedBlindAlert := "Blind is 100"
 		winner := "x7"
+
+		poll := &utilstesting.PollSpy{BlindAlert: []byte(wantedBlindAlert)}
 
 		store := utilstesting.GetNewStubGameStore(nil, []string{}, model.Polling{})
 		svr, err := webserver.NewGameServer(&store, "../../templates/poll.html", poll)
@@ -145,9 +150,36 @@ func TestPoll(t *testing.T) {
 
 		// TODO: bad practice
 		// timeout for the websocket connection to read the message and the server record the winner
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(tenMS)
 
 		utilstesting.AssertGameStartedWith(t, poll, 8)
 		utilstesting.AssertGameFinishCalledWith(t, poll, winner)
+
+		within(t, tenMS, func() { assertWebSocketGotMessage(t, ws, wantedBlindAlert) })
 	})
+}
+
+func within(t *testing.T, d time.Duration, assert func()) {
+	t.Helper()
+
+	done := make(chan struct{}, 1)
+
+	go func() {
+		assert()
+		done <- struct{}{}
+	}()
+
+	select {
+	case <-time.After(d):
+		t.Errorf("timed out")
+	case <-done:
+	}
+}
+
+func assertWebSocketGotMessage(t *testing.T, ws *websocket.Conn, want string) {
+	_, msg, _ := ws.ReadMessage()
+
+	if string(msg) != want {
+		t.Errorf("got blind alert '%s', want '%s'", string(msg), want)
+	}
 }

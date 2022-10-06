@@ -6,15 +6,18 @@ import (
 )
 
 type PollSpy struct {
-	StartedWith  int
-	FinishedWith string
-	StartCalled  bool
+	StartCalled bool
+	StartedWith int
+	BlindAlert  []byte
+
 	FinishCalled bool
+	FinishedWith string
 }
 
 func (p *PollSpy) Start(numberOfVotingOptions int, to io.Writer) {
 	p.StartedWith = numberOfVotingOptions
 	p.StartCalled = true
+	to.Write(p.BlindAlert)
 }
 
 func (p *PollSpy) Finish(winner string) {

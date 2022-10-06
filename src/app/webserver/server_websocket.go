@@ -33,3 +33,13 @@ func (ws *pollServerWS) WaitForMessage() string {
 
 	return string(msg)
 }
+
+func (ws *pollServerWS) Write(b []byte) (n int, err error) {
+	err = ws.WriteMessage(1, b)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return len(b), nil
+}
